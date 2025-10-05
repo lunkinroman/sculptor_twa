@@ -1,3 +1,20 @@
+/* Font Faces */
+@font-face {
+  font-family: 'PP Neue Montreal';
+  src: url('./assets/fonts/ppneuemontreal-medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'PP Neue Montreal';
+  src: url('./assets/fonts/ppneuemontreal-book.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Telegram WebApp Theme Variables */
 :root {
   --bg: #0f0f10;
@@ -58,7 +75,7 @@ html, body {
 
 .access-denied {
   font-size: 120px;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.1;
   letter-spacing: -0.02em;
   margin: 0;
