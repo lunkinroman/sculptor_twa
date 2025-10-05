@@ -23,7 +23,7 @@ html, body {
   width: 100vw;
   height: 100vh;
   height: 100dvh; /* Dynamic viewport height for mobile */
-  background: linear-gradient(135deg, #1a0000 0%, #8b0000 50%, #ff0000 100%);
+  background: url('./assets/images/bg-no-access.png') center/cover no-repeat;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -40,7 +40,7 @@ html, body {
   z-index: 1;
 }
 
-/* Background elements removed - using gradient background directly */
+/* Background image applied directly to container */
 
 /* Content Layer */
 .content-layer {
