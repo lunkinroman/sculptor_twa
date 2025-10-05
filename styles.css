@@ -36,14 +36,21 @@ html, body {
 
 /* No Access Screen Container */
 .no-access-container {
-  position: relative;
-  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
   height: 100vh;
-  background: url('./assets/images/bg-no-access.png') center/cover no-repeat;
+  background: linear-gradient(135deg, #1a0000 0%, #8b0000 50%, #ff0000 100%);
+  background-image: url('./assets/images/bg-no-access.png');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1;
 }
 
 /* Background Layer */
@@ -142,7 +149,6 @@ html, body {
   font-weight: 500;
   text-transform: uppercase;
   color: #000;
-  letter-spacing: 0.1em;
 }
 
 /* Light theme support */
@@ -168,10 +174,6 @@ html, body {
 
 .telegram-theme .access-denied,
 .telegram-theme .instruction {
-  color: var(--text);
-}
-
-.telegram-theme .buy-text {
   color: var(--text);
 }
 
