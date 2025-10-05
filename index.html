@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Telegram WebApp Starter (Vanilla)</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <h1>Telegram WebApp Starter</h1>
+        <p class="subtitle">Vanilla HTML • CSS • JS</p>
+      </header>
+
+      <section class="card" id="env-info">
+        <h2>Environment</h2>
+        <div class="kv">
+          <div class="k">Opened in Telegram</div>
+          <div class="v" id="is-telegram">detecting…</div>
+        </div>
+        <div class="kv">
+          <div class="k">Theme</div>
+          <div class="v" id="theme">detecting…</div>
+        </div>
+      </section>
+
+      <section class="card" id="user-info">
+        <h2>User</h2>
+        <div class="kv">
+          <div class="k">ID</div>
+          <div class="v" id="user-id">—</div>
+        </div>
+        <div class="kv">
+          <div class="k">Name</div>
+          <div class="v" id="user-name">—</div>
+        </div>
+        <div class="kv">
+          <div class="k">Username</div>
+          <div class="v" id="user-username">—</div>
+        </div>
+      </section>
+
+      <section class="card" id="actions">
+        <h2>Actions</h2>
+        <div class="actions">
+          <button id="btn-send-data" class="btn">Send Data</button>
+          <button id="btn-alert" class="btn outline">Show Alert</button>
+        </div>
+        <p class="hint">Main Button and Back Button are available in Telegram.</p>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+  </html>
+
+
