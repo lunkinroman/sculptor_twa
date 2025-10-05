@@ -1,47 +1,50 @@
-# Telegram WebApp Starter (Vanilla HTML/CSS/JS)
+# Sculptor - Нет доступа (Telegram WebApp)
 
-Minimal starter for building Telegram Mini Apps (Web Apps) without frameworks.
+Экран "Нет доступа" для Telegram WebApp приложения Sculptor. Показывает пользователям сообщение о том, что для доступа к материалам необходимо приобрести тренировку.
 
-## Features
-- Uses official `telegram-web-app.js`
-- Handles theme and color scheme changes
-- Main Button + sendData example
-- Works in browser fallback (for local testing)
+## Особенности
+- Адаптирован под дизайн Figma с градиентным фоном и размытым кругом
+- Интеграция с официальным `telegram-web-app.js`
+- Адаптивный дизайн для мобильных устройств
+- Поддержка темной/светлой темы Telegram
+- Кнопка "Купить" с интеграцией Main Button
+- Работает в браузере для локального тестирования
 
-## Local development
-Serve the static files with any HTTP server (Telegram requires HTTPS in production, but local HTTP is fine for testing).
+## Локальная разработка
+Запустите HTTP сервер для тестирования (Telegram требует HTTPS в продакшене, но локальный HTTP подойдет для тестов).
 
 ```bash
 cd /Users/romanlunkin/sculptor_twa
 python3 -m http.server 5173
 ```
 
-Then open `http://localhost:5173` in a browser.
+Откройте `http://localhost:5173` в браузере.
 
-## Telegram Integration
-1. Host your app on HTTPS (e.g., GitHub Pages, Vercel, Netlify).
-2. Create a bot via `@BotFather` and set Web App URLs:
-   - Set `Menu Button` → `Web App` with your URL.
-   - Or attach a `web_app` button in a custom keyboard.
-3. Launch Mini App from Telegram. The app will receive `initData` and `themeParams`.
+## Интеграция с Telegram
+1. Разместите приложение на HTTPS (GitHub Pages, Vercel, Netlify и т.д.)
+2. Создайте бота через `@BotFather` и настройте Web App URL:
+   - Установите `Menu Button` → `Web App` с вашим URL
+   - Или добавьте кнопку `web_app` в кастомную клавиатуру
+3. Запустите Mini App из Telegram. Приложение получит `initData` и `themeParams`
 
-Docs: see `Telegram Mini Apps` Web Apps API (via Context7) or `core.telegram.org/bots/webapps`.
+Документация: `Telegram Mini Apps` Web Apps API или `core.telegram.org/bots/webapps`
 
-## Deploy (GitHub Pages)
-- Create a repo on GitHub and push (see below).
-- Enable GitHub Pages (Settings → Pages) and point to `main` branch `/root`.
+## Деплой (GitHub Pages)
+- Создайте репозиторий на GitHub и отправьте код (см. ниже)
+- Включите GitHub Pages (Settings → Pages) и укажите ветку `main` и папку `/root`
 
-## Push to GitHub
-Using GitHub CLI:
+## Отправка в GitHub
+Используя GitHub CLI:
 ```bash
 cd /Users/romanlunkin/sculptor_twa
-git init -b main
 git add .
-git commit -m "chore: init Telegram WebApp vanilla starter"
-# Create and push repo
+git commit -m "feat: адаптировать экран 'нет доступа' под дизайн Figma"
+# Создать и отправить репозиторий
 gh repo create sculptor_twa --public --source=. --remote=origin --push -y
 ```
 
-## Notes
-- Outside Telegram, the app shows a browser fallback UI. In Telegram, it enables Main Button, `sendData`, `showAlert`, and reacts to `themeChanged`.
-- In production, make sure your domain is allowed in BotFather settings.
+## Заметки
+- Вне Telegram показывает fallback интерфейс в браузере
+- В Telegram включает Main Button для покупки, `sendData` и реагирует на изменения темы
+- В продакшене убедитесь, что домен разрешен в настройках BotFather
+- Кнопка "Купить" отправляет данные о намерении приобрести тренировку

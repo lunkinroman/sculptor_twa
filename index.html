@@ -3,54 +3,37 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Telegram WebApp Starter (Vanilla)</title>
+    <title>Sculptor - Нет доступа</title>
     <link rel="stylesheet" href="./styles.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
-    <main class="container">
-      <header class="header">
-        <h1>Telegram WebApp Starter</h1>
-        <p class="subtitle">Vanilla HTML • CSS • JS</p>
-      </header>
+    <div class="no-access-container">
+      <div class="background-layer">
+        <div class="bg-image"></div>
+        <div class="blur-circle"></div>
+      </div>
 
-      <section class="card" id="env-info">
-        <h2>Environment</h2>
-        <div class="kv">
-          <div class="k">Opened in Telegram</div>
-          <div class="v" id="is-telegram">detecting…</div>
+      <div class="content-layer">
+        <div class="main-text">
+          <p class="access-denied">У вас нет</p>
+          <p class="access-denied">доступа к этому</p>
+          <p class="access-denied">материалу</p>
         </div>
-        <div class="kv">
-          <div class="k">Theme</div>
-          <div class="v" id="theme">detecting…</div>
-        </div>
-      </section>
 
-      <section class="card" id="user-info">
-        <h2>User</h2>
-        <div class="kv">
-          <div class="k">ID</div>
-          <div class="v" id="user-id">—</div>
+        <div class="instruction-text">
+          <p class="instruction">Чтобы получить доступ,</p>
+          <p class="instruction">вам нужно приобрести тренировку</p>
         </div>
-        <div class="kv">
-          <div class="k">Name</div>
-          <div class="v" id="user-name">—</div>
-        </div>
-        <div class="kv">
-          <div class="k">Username</div>
-          <div class="v" id="user-username">—</div>
-        </div>
-      </section>
 
-      <section class="card" id="actions">
-        <h2>Actions</h2>
-        <div class="actions">
-          <button id="btn-send-data" class="btn">Send Data</button>
-          <button id="btn-alert" class="btn outline">Show Alert</button>
+        <div class="buy-button-container">
+          <button id="buy-button" class="buy-btn">
+            <span class="buy-text">купить</span>
+            <div class="buy-arrow">→</div>
+          </button>
         </div>
-        <p class="hint">Main Button and Back Button are available in Telegram.</p>
-      </section>
-    </main>
+      </div>
+    </div>
 
     <script src="./app.js"></script>
   </body>

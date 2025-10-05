@@ -3,7 +3,11 @@
 
   function setThemeFromTelegram(themeParams) {
     if (!themeParams) return;
+
     const root = document.documentElement;
+    const container = document.querySelector('.no-access-container');
+
+    // Apply Telegram theme colors
     const map = {
       '--bg': themeParams.bg_color,
       '--text': themeParams.text_color,
@@ -12,43 +16,42 @@
       '--card': themeParams.secondary_bg_color,
       '--outline': themeParams.section_separator_color
     };
+
     Object.entries(map).forEach(([cssVar, value]) => {
       if (typeof value === 'string' && value.trim().length > 0) {
         root.style.setProperty(cssVar, value);
       }
     });
+
+    // Add Telegram theme class for additional styling
+    if (container) {
+      container.classList.add('telegram-theme');
+    }
   }
 
-  function updateEnvUI({ isTelegram, colorScheme }) {
-    document.getElementById('is-telegram').textContent = isTelegram ? 'Yes' : 'No (browser)';
-    document.getElementById('theme').textContent = colorScheme;
-  }
+  function setupBuyButton(tg) {
+    const buyButton = document.getElementById('buy-button');
 
-  function updateUserUI(user) {
-    document.getElementById('user-id').textContent = user?.id ?? '—';
-    const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(' ');
-    document.getElementById('user-name').textContent = fullName || '—';
-    document.getElementById('user-username').textContent = user?.username ? `@${user.username}` : '—';
-  }
+    if (!buyButton) return;
 
-  function setupButtons(tg) {
-    const btnSend = document.getElementById('btn-send-data');
-    const btnAlert = document.getElementById('btn-alert');
+    buyButton.addEventListener('click', () => {
+      const payload = {
+        action: 'purchase_training',
+        timestamp: Date.now(),
+        source: 'no_access_screen'
+      };
 
-    btnSend.addEventListener('click', () => {
-      const payload = { ts: Date.now(), action: 'send_data_click' };
       if (tg) {
-        tg.sendData(JSON.stringify(payload));
+        // Use Telegram's Main Button for purchase flow
+        tg.MainButton.setText('Перейти к оплате');
+        tg.MainButton.show();
+        tg.onEvent('mainButtonClicked', () => {
+          tg.sendData(JSON.stringify({ ...payload, confirmed: true }));
+        });
       } else {
-        alert('sendData: ' + JSON.stringify(payload));
-      }
-    });
-
-    btnAlert.addEventListener('click', () => {
-      if (tg) {
-        tg.showAlert('Hello from WebApp!');
-      } else {
-        alert('Hello from WebApp!');
+        // Browser fallback - could redirect to payment page
+        alert('В браузере: ' + JSON.stringify(payload));
+        console.log('Purchase button clicked:', payload);
       }
     });
   }
@@ -59,30 +62,32 @@
 
     setThemeFromTelegram(tg.themeParams);
 
-    updateEnvUI({ isTelegram: true, colorScheme: tg.colorScheme || 'unknown' });
-    updateUserUI(tg.initDataUnsafe?.user);
-
-    tg.MainButton.setText('Confirm');
+    // Set Main Button for purchase
+    tg.MainButton.setText('Купить тренировку');
     tg.MainButton.show();
+
     tg.onEvent('mainButtonClicked', () => {
-      tg.showConfirm('Do you confirm?', (ok) => {
-        if (ok) tg.sendData(JSON.stringify({ confirmed: true, ts: Date.now() }));
-      });
+      const payload = {
+        action: 'purchase_training',
+        timestamp: Date.now(),
+        source: 'main_button'
+      };
+      tg.sendData(JSON.stringify(payload));
     });
 
     tg.onEvent('themeChanged', () => {
       setThemeFromTelegram(tg.themeParams);
-      updateEnvUI({ isTelegram: true, colorScheme: tg.colorScheme || 'unknown' });
     });
   }
 
   function initInBrowserFallback() {
-    updateEnvUI({ isTelegram: false, colorScheme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light' });
-    updateUserUI(null);
+    // Browser fallback - no special initialization needed
+    console.log('Running in browser mode');
   }
 
   function boot() {
-    setupButtons(telegramWebApp);
+    setupBuyButton(telegramWebApp);
+
     if (telegramWebApp) {
       initInTelegram(telegramWebApp);
     } else {
