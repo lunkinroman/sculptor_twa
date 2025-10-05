@@ -37,9 +37,8 @@ html, body {
 /* No Access Screen Container */
 .no-access-container {
   position: relative;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
-  height: 100dvh; /* Dynamic viewport height for mobile */
   background: url('./assets/images/bg-no-access.png') center/cover no-repeat;
   overflow: hidden;
   display: flex;
@@ -65,16 +64,20 @@ html, body {
   z-index: 3;
   text-align: center;
   color: #fff;
-  padding: 0 20px;
+  padding: 40px 20px 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100vh - 100px);
 }
 
 /* Main Text Styling */
 .main-text {
-  margin-bottom: 60px;
+  margin-bottom: 40px;
 }
 
 .access-denied {
-  font-size: 120px;
+  font-size: 72px;
   font-weight: 500;
   line-height: 1.1;
   letter-spacing: -0.02em;
@@ -83,47 +86,22 @@ html, body {
   text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* Responsive text sizing */
-@media (max-width: 768px) {
-  .access-denied {
-    font-size: 80px;
-  }
-}
-
-@media (max-width: 480px) {
-  .access-denied {
-    font-size: 60px;
-  }
-}
-
 /* Instruction Text */
 .instruction-text {
-  margin-bottom: 80px;
+  margin-bottom: 50px;
 }
 
 .instruction {
-  font-size: 36px;
+  font-size: 24px;
   font-weight: 400;
   line-height: 1.3;
   letter-spacing: -0.01em;
   margin: 0;
   color: #fff;
   text-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
-  max-width: 800px;
+  max-width: 600px;
   margin-left: auto;
   margin-right: auto;
-}
-
-@media (max-width: 768px) {
-  .instruction {
-    font-size: 28px;
-  }
-}
-
-@media (max-width: 480px) {
-  .instruction {
-    font-size: 22px;
-  }
 }
 
 /* Buy Button Container */
@@ -131,6 +109,8 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  padding: 0 20px;
 }
 
 /* Buy Button */
@@ -138,18 +118,21 @@ html, body {
   background: #fff;
   border: none;
   border-radius: 0;
-  padding: 20px 40px;
+  padding: 16px 32px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 15px;
+  justify-content: center;
+  gap: 12px;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
 }
 
 .buy-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
 .buy-btn:active {
@@ -157,7 +140,7 @@ html, body {
 }
 
 .buy-text {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 500;
   text-transform: uppercase;
   color: #000;
@@ -165,34 +148,9 @@ html, body {
 }
 
 .buy-arrow {
-  font-size: 20px;
+  font-size: 16px;
   color: #000;
   font-weight: 400;
-}
-
-/* Responsive button */
-@media (max-width: 768px) {
-  .buy-btn {
-    padding: 18px 35px;
-  }
-  .buy-text {
-    font-size: 22px;
-  }
-  .buy-arrow {
-    font-size: 18px;
-  }
-}
-
-@media (max-width: 480px) {
-  .buy-btn {
-    padding: 16px 30px;
-  }
-  .buy-text {
-    font-size: 20px;
-  }
-  .buy-arrow {
-    font-size: 16px;
-  }
 }
 
 /* Light theme support */
