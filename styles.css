@@ -31,7 +31,7 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #0b0b0c; /* fallback to avoid white gutters */
+  background-color: #f2f2f2; /* light base for main menu */
   overflow-x: hidden; /* prevent any horizontal scroll that might reveal gutters */
   font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
@@ -48,6 +48,12 @@ html, body {
   align-items: center;
   justify-content: center;
   z-index: 1;
+}
+
+/* Ensure hidden state always wins */
+.no-access-container[hidden],
+.no-access-container.is-hidden {
+  display: none !important;
 }
 
 .no-access-container::before {
@@ -184,4 +190,555 @@ html, body {
   color: var(--text);
 }
 
+/* ---- Main menu (Calendar) ---- */
+.page {
+  min-height: 100vh;
+  background-color: #f2f2f2;
+  background-image: url('./assets/images/bg-calendar.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  padding: 24px 20px 140px; /* leave room for bottom nav */
+}
 
+.page-header { margin-bottom: 12px; }
+
+.page-title {
+  margin: 0 0 16px;
+  color: #000;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-size: clamp(40px, 9vw, 104.49px);
+}
+
+/* Today banner */
+.today-banner {
+  position: relative;
+  background: #eb3b40;
+  color: #fff;
+  height: 104px; /* half height */
+  border-radius: 0;
+  display: grid;
+  grid-template-columns: 62.35px 1fr; /* halve square column */
+  align-items: center;
+  padding: 0 20px;
+  margin: 8px 0 20px;
+}
+
+.today-square {
+  width: 124.7px;
+  height: 123.8px;
+  border: 1px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56.56px;
+  font-weight: 500;
+}
+.today-square {
+  width: 62.35px; /* half */
+  height: 61.9px; /* half */
+  font-size: 28.28px; /* half */
+}
+.today-square span { transform: translateY(2px); }
+
+.today-text { margin-left: 20px; }
+.today-subtitle,
+.today-title {
+  font-size: clamp(28px, 4.2vw, 33.1px);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* Calendar image */
+.calendar-section { margin: 12px 0 18px; }
+.calendar-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Legend */
+.legend { margin: 6px 2px 14px; }
+.legend-text {
+  font-size: 16.74px; /* half */
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: #000;
+  opacity: .4;
+}
+.legend-text .span { font-family: 'PP Neue Montreal'; }
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: rgba(0,0,0,.08);
+  margin: 16px 0 18px;
+}
+
+/* Training card */
+.training-card {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 20px;
+  align-items: start;
+  padding: 6px 0 12px;
+  color: #000;
+}
+
+.training-image {
+  width: 130px;
+  height: 130px;
+  object-fit: cover;
+  display: block;
+}
+
+.training-content { position: relative; }
+
+.training-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 29px; /* half */
+  padding: 0 14px; /* half */
+  border-radius: 20.405px; /* half */
+  background: rgba(235, 59, 64, 0.24);
+  border: 0.7px solid #eb3b40;
+  backdrop-filter: blur(18px);
+  color: #000;
+  font-size: 21.295px; /* half */
+  letter-spacing: -0.01em;
+  line-height: 1.09;
+  margin-bottom: 16px;
+}
+
+.training-title {
+  margin: 0 0 18px;
+  font-weight: 500;
+  font-size: clamp(20px, 4vw, 39.74px); /* 1.5x smaller */
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.training-link {
+  color: #eb3b40;
+  text-decoration: underline;
+  font-size: clamp(18px, 3.8vw, 32px);
+}
+
+/* Bottom navigation */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 96px;
+  padding-bottom: max(0px, env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(32.5px);
+  background-color: rgba(255,255,255,0.7);
+  border-top: 0.4px solid #fff;
+  z-index: 10;
+}
+
+.nav-btn {
+  appearance: none;
+  border: 0;
+  background: none;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-size: clamp(24px, 5vw, 38px);
+  color: rgba(0,0,0,.6);
+}
+.nav-btn.is-active { color: #eb3b40; }
+.nav-btn.profile-btn { position: relative; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+
+/* Icon system using CSS masks to ensure consistent rendering on iOS */
+.nav-btn .icon { display: inline-block; width: 28px; height: 28px; background-color: currentColor; }
+.nav-btn .icon { -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; }
+.nav-btn .i-calendar { -webkit-mask-image: url('./assets/images/icons/calendar.svg'); mask-image: url('./assets/images/icons/calendar.svg'); }
+.nav-btn .i-links { -webkit-mask-image: url('./assets/images/icons/links.svg'); mask-image: url('./assets/images/icons/links.svg'); }
+.nav-btn .i-news { -webkit-mask-image: url('./assets/images/icons/news.svg'); mask-image: url('./assets/images/icons/news.svg'); }
+.nav-btn .i-star { -webkit-mask-image: url('./assets/images/icons/star.svg'); mask-image: url('./assets/images/icons/star.svg'); }
+/* sculpture profile icon: use high-res PNG alpha as mask for crispness */
+.nav-btn .i-sculpture { -webkit-mask-image: url('./assets/images/sculptor-nav-item.png'); mask-image: url('./assets/images/sculptor-nav-item.png'); }
+/* optional rendering hint (some browsers ignore on masks, harmless otherwise) */
+.nav-btn .i-sculpture { image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; }
+
+/* ---- Links Screen ---- */
+#links-screen .page-title { color: #000; }
+
+.links {
+  display: grid;
+  gap: 28px;
+}
+
+.link-card {
+  position: relative;
+  background: linear-gradient(0deg, #eb3b40, rgba(255,255,255,0));
+  color: #fff;
+  padding: 24px;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.link-card__image {
+  position: static;
+  width: clamp(190px, 38vw, 300px);
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  margin-top: 12px;
+  margin-left: -12px;
+  margin-bottom: 12px;
+}
+
+.link-card__title {
+  position: static;
+  margin: 0 0 10px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-size: clamp(36px, 7vw, 64px);
+}
+
+.link-card__desc {
+  position: static;
+  margin: 0 0 18px;
+  font-size: clamp(16px, 3.5vw, 26px);
+  line-height: 1.2;
+}
+
+.link-card__note {
+  position: absolute;
+  right: 20px;
+  top: 16px;
+  font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  opacity: .87;
+}
+
+.link-card__btn {
+  position: static;
+  height: 57px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  background: #eb3b40;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  width: 100%;
+}
+
+/* Dark scheme adjustments */
+@media (prefers-color-scheme: dark) {
+  html, body { background-color: #121212; }
+  .training-link { color: #ff6b70; }
+}
+
+
+
+.rating-podium {
+  position: relative;
+  margin: 0px 0 28px;
+  padding-top: 210px; /* reserve vertical space so avatars sit above the stairs */
+}
+
+.rating-podium__bg {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-top: -56px; /* raise stairs higher, avatars stay */
+}
+
+.podium-avatar {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 1; /* ensure above stairs image */
+}
+.podium-avatar__img {
+  width: 90px; /* unified size */
+  height: 90px;
+  border-radius: 224.43px;
+  object-fit: cover;
+}
+.podium-avatar__name { color: #000; font-size: clamp(20px, 3.4vw, 22px); opacity: .7; }
+
+/* Positions based on background reference */
+.podium-avatar--first { left: 50%; top: 12px; transform: translateX(-50%); }
+.podium-avatar--first .podium-avatar__img { width: 90px; height: 90px; border-radius: 224.43px; }
+
+.podium-avatar--second { left: 15%; top: 44px; transform: translateX(-50%); }
+.podium-avatar--second .podium-avatar__img { width: 90px; height: 90px; border-radius: 187.66px; }
+.podium-avatar__img--left { margin-top: 36px; }
+
+.podium-avatar--third { left: 85%; top: 44px; transform: translateX(-50%); }
+.podium-avatar--third .podium-avatar__img { width: 90px; height: 90px; border-radius: 187.66px; }
+.podium-avatar__img--right { margin-top: 18px; }
+
+.leaderboard-title { margin: 16px 0 10px; color: #000; font-size: clamp(32px, 7vw, 72px); letter-spacing: -0.02em; line-height: 1; font-weight: 400; }
+
+.leaderboard-list { display: grid; gap: 0; }
+
+.leaderboard-row { display: grid; grid-template-columns: 26px 52px 1fr; align-items: center; gap: 10px; padding: 12px 0; }
+.leaderboard-num { width: 26px; font-size: 28px; letter-spacing: -0.02em; line-height: 1; font-weight: 500; color: #000; display: flex; align-items: center; justify-content: center; }
+.leaderboard-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
+.leaderboard-name { width: 220px; font-size: 22px; letter-spacing: -0.01em; line-height: 1.05; color: #000; opacity: .7; }
+.you-tag { color: #eb3b40; }
+
+.leaderboard-divider { height: 1px; background: rgba(0,0,0,.2); }
+
+/* ---- Home Screen ---- */
+#home-screen .page-title { color: #000; }
+#home-screen .home-carousel { margin-top: 8px; }
+
+.home-carousel { position: relative; overflow: hidden; display: block; }
+.home-track { display: flex; will-change: transform; transition: transform .35s ease; }
+.home-slide { flex: 0 0 100%; padding: 0 0 12px; display: block; }
+.home-dots { position: absolute; left: 43.16px; top: 46.86px; display: flex; gap: 8px; }
+.home-dot { width: 10px; height: 10px; border-radius: 50%; border: 0; background: rgba(0,0,0,.2); }
+.home-dot.is-active { background: #eb3b40; }
+.home-dot.is-active { background: #eb3b40; }
+
+/* Make each card scale to device width while preserving original design sizes */
+.home-card { position: relative; width: 100%; }
+.card-canvas { position: relative; width: 100%; max-width: 100%; }
+.card-canvas { --design-width: 964; }
+.card-canvas .rectangle-parent { position: absolute; top: 0; left: 50%; transform: translateX(-50%); }
+.card-canvas { aspect-ratio: 964 / 392.5; position: relative; }
+/* shrink the design so the whole canvas fits vertically and horizontally */
+.home-card .rectangle-parent { width: 964px; height: 392.5px; }
+.home-carousel { padding-top: 4px; }
+
+/* Ensure the white canvas background fills width */
+.home-card .group-child { left: 0; width: 100%; }
+
+/* Card styles from spec */
+.rectangle-parent {
+  width: 100%;
+  position: relative;
+  height: 392.5px;
+  text-align: left;
+  font-size: 59.07px;
+  color: rgba(235, 59, 64, 0.77);
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+.group-child {
+  position: absolute;
+  top: 0px;
+  left: calc(50% - 482px);
+  background-color: #fff;
+  width: 964px;
+  height: 392.5px;
+}
+.wrapper {
+  position: absolute;
+  top: 181.14px;
+  left: calc(50% - 442.3px);
+  backdrop-filter: blur(77.8px);
+  border-radius: 314.44px;
+  background-color: rgba(235, 59, 64, 0.1);
+  border: 1.2px solid #fff;
+  box-sizing: border-box;
+  width: 121.1px;
+  height: 121.1px;
+  overflow: hidden;
+}
+.div {
+  position: absolute;
+  top: 32.06px;
+  left: calc(50% - 16.49px);
+  line-height: 97%;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.container {
+  position: absolute;
+  top: 181.14px;
+  left: calc(50% - 254.19px);
+  backdrop-filter: blur(77.8px);
+  border-radius: 314.44px;
+  background-color: rgba(235, 59, 64, 0.1);
+  border: 1.2px solid #fff;
+  box-sizing: border-box;
+  width: 121.1px;
+  height: 121.1px;
+  overflow: hidden;
+}
+.rectangle-div {
+  position: absolute;
+  top: 32.06px;
+  left: calc(50% - 17.49px);
+  line-height: 97%;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.frame {
+  position: absolute;
+  top: 181.14px;
+  left: calc(50% - 66.06px);
+  backdrop-filter: blur(77.8px);
+  border-radius: 314.44px;
+  background-color: rgba(235, 59, 64, 0.1);
+  border: 1.2px solid #fff;
+  box-sizing: border-box;
+  width: 121.1px;
+  height: 121.1px;
+  overflow: hidden;
+}
+.frame-div {
+  position: absolute;
+  top: 181.14px;
+  left: calc(50% + 122.05px);
+  backdrop-filter: blur(77.8px);
+  border-radius: 314.44px;
+  background-color: rgba(235, 59, 64, 0.1);
+  border: 1.2px solid #fff;
+  box-sizing: border-box;
+  width: 121.1px;
+  height: 121.1px;
+  overflow: hidden;
+}
+.rectangle-wrapper {
+  position: absolute;
+  top: 181.14px;
+  left: calc(50% + 310.17px);
+  backdrop-filter: blur(77.8px);
+  border-radius: 314.44px;
+  background-color: rgba(235, 59, 64, 0.1);
+  border: 1.2px solid #fff;
+  box-sizing: border-box;
+  width: 121.1px;
+  height: 121.1px;
+  overflow: hidden;
+}
+.home-card .wrapper,
+.home-card .container,
+.home-card .frame,
+.home-card .frame-div,
+.home-card .rectangle-wrapper { display: flex; align-items: center; justify-content: center; }
+.home-card .wrapper .div,
+.home-card .container .rectangle-div,
+.home-card .frame .rectangle-div,
+.home-card .frame-div .rectangle-div,
+.home-card .rectangle-wrapper .rectangle-div { position: static; top: auto; left: auto; transform: none; }
+.div5 {
+  position: absolute;
+  top: 86.28px;
+  left: calc(50% - 442.3px);
+  font-size: 60.44px;
+  letter-spacing: -0.02em;
+  line-height: 100%;
+  font-family: 'PP Neue Montreal';
+  color: #000;
+}
+.div6 {
+  position: absolute;
+  top: 317.12px;
+  left: calc(50% - 442.3px + 60.55px); /* center of first circle (wrapper) */
+  font-size: 35.79px;
+  letter-spacing: -0.02em;
+  line-height: 100%;
+  font-family: 'PP Neue Montreal';
+  color: #000;
+  opacity: 0.3;
+  transform: translateX(-50%);
+  text-align: center;
+}
+.div7 {
+  position: absolute;
+  top: 317.12px;
+  left: calc(50% + 310.17px + 60.55px); /* center of last circle */
+  font-size: 35.79px;
+  letter-spacing: -0.02em;
+  line-height: 100%;
+  font-family: 'PP Neue Montreal';
+  color: #000;
+  opacity: 0.3;
+  transform: translateX(-50%);
+  text-align: center;
+}
+.group-item {
+  position: absolute;
+  top: 46.86px;
+  left: 43.16px;
+  width: 44.3px;
+  height: 15.7px;
+}
+
+/* ---- News card ---- */
+.news-list { display: grid; gap: 16px; margin-top: 8px; }
+.news-card {
+  position: relative;
+  background: #eee;
+  color: #000;
+  min-height: clamp(220px, 45vw, 360px);
+  overflow: hidden;
+}
+.news-card__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(80%) brightness(1.02); }
+.news-card__overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(255,255,255,.85) 0%, rgba(255,255,255,.5) 16%, rgba(255,255,255,.15) 40%, rgba(255,255,255,0) 64%); }
+.news-card__content { position: relative; padding: 14px 16px 18px; display: grid; gap: 6px; align-content: end; min-height: inherit; }
+.news-card__date { font-size: clamp(16px, 3vw, 18px); opacity: .3; }
+.news-card__title { margin: 0; letter-spacing: -0.02em; line-height: 1.02; font-size: clamp(20px, 7.2vw, 40px); font-family: 'PP Neue Montreal'; }
+.news-card .home-dots {
+  position: absolute;
+  left: calc(43.16px * var(--mood-scale, 1));
+  top: calc(46.86px * var(--mood-scale, 1));
+  display: flex;
+  gap: 8px;
+  transform: scale(var(--mood-scale, 1));
+  transform-origin: top left;
+}
+.news-card .home-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* ---- Water tracker banner ---- */
+.vector-parent {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+  color: #fff;
+  font-family: 'PP Neue Montreal';
+}
+.vector-canvas {
+  position: relative;
+  width: 100%;
+  max-width: 964px;
+  margin: 0 auto;
+  height: 104px; /* same height as today-banner */
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-image: url('./assets/images/water-checker.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.vector-title {
+  position: static;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-weight: 500;
+  font-size: clamp(22px, 5.6vw, 34px);
+}
+.vector-div {
+  position: static;
+  font-size: clamp(16px, 4.4vw, 22px);
+  letter-spacing: -0.02em;
+  line-height: 1.16;
+  opacity: .95;
+}

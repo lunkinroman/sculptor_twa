@@ -3,18 +3,21 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Sculptor - Нет доступа</title>
+    <title>Sculptor - Календарь</title>
     <link rel="stylesheet" href="./styles.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
-    <div class="no-access-container">
+    <!-- No access screen (kept for separate flow) -->
+    <div class="no-access-container" hidden>
       <div class="content-layer">
         <div class="main-text">
           <p class="access-denied">У вас нет</p>
           <p class="access-denied">доступа к этому</p>
           <p class="access-denied">материалу</p>
         </div>
+
+    
 
         <div class="instruction-text">
           <p class="instruction">Чтобы получить доступ,</p>
@@ -28,6 +31,306 @@
         </div>
       </div>
     </div>
+
+    <main class="page" id="home-screen" hidden>
+      <header class="page-header">
+        <h1 class="page-title">Главная</h1>
+      </header>
+
+      <section class="home-carousel" aria-roledescription="carousel">
+        <div class="home-track" data-index="0">
+          <!-- Slide 1: Моё самочувствие -->
+          <div class="home-slide">
+            <div class="home-card">
+              <div class="card-canvas">
+                <div class="rectangle-parent">
+              <div class="group-child"></div>
+              <div class="wrapper"><div class="div">1</div></div>
+              <div class="container"><div class="rectangle-div">2</div></div>
+              <div class="frame"><div class="rectangle-div">3</div></div>
+              <div class="frame-div"><div class="rectangle-div">4</div></div>
+              <div class="rectangle-wrapper"><div class="rectangle-div">5</div></div>
+              <div class="div5">Моё самочувствие сегодня</div>
+              <div class="div6">Плохо</div>
+              <div class="div7">Отлично</div>
+              <div class="home-dots" role="tablist" aria-label="слайды">
+                <button class="home-dot is-active" data-to="0" role="tab" aria-selected="true" aria-controls="slide-1"></button>
+                <button class="home-dot" data-to="1" role="tab" aria-selected="false" aria-controls="slide-2"></button>
+              </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 2: Как я сегодня питалась -->
+          <div class="home-slide">
+            <div class="home-card">
+              <div class="card-canvas">
+                <div class="rectangle-parent">
+              <div class="group-child"></div>
+              <div class="wrapper"><div class="div">1</div></div>
+              <div class="container"><div class="rectangle-div">2</div></div>
+              <div class="frame"><div class="rectangle-div">3</div></div>
+              <div class="frame-div"><div class="rectangle-div">4</div></div>
+              <div class="rectangle-wrapper"><div class="rectangle-div">5</div></div>
+              <div class="div5">Как я сегодня питалась</div>
+              <div class="div6">Плохо</div>
+              <div class="div7">Отлично</div>
+              <div class="home-dots" role="tablist" aria-label="слайды">
+                <button class="home-dot is-active" data-to="0" role="tab" aria-selected="true" aria-controls="slide-1"></button>
+                <button class="home-dot" data-to="1" role="tab" aria-selected="false" aria-controls="slide-2"></button>
+              </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="home-carousel news-carousel" aria-roledescription="carousel">
+        <div class="home-track" data-index="0">
+          <div class="home-slide">
+            <article class="news-card">
+              <img class="news-card__bg" src="./assets/images/train-example.png" alt="news">
+              <div class="news-card__overlay"></div>
+              <div class="home-dots" role="tablist" aria-label="слайды">
+                <button class="home-dot is-active" data-to="0" role="tab" aria-selected="true" aria-controls="news-slide-1"></button>
+                <button class="home-dot" data-to="1" role="tab" aria-selected="false" aria-controls="news-slide-2"></button>
+                <button class="home-dot" data-to="2" role="tab" aria-selected="false" aria-controls="news-slide-3"></button>
+              </div>
+              <div class="news-card__content">
+                <div class="news-card__date">20 сентября</div>
+                <div class="news-card__title">Открыт новый поток на Скульптор!</div>
+              </div>
+            </article>
+          </div>
+          <div class="home-slide">
+            <article class="news-card">
+              <img class="news-card__bg" src="./assets/images/train-example.png" alt="news">
+              <div class="news-card__overlay"></div>
+              <div class="home-dots" role="tablist" aria-label="слайды">
+                <button class="home-dot" data-to="0" role="tab" aria-selected="false" aria-controls="news-slide-1"></button>
+                <button class="home-dot is-active" data-to="1" role="tab" aria-selected="true" aria-controls="news-slide-2"></button>
+                <button class="home-dot" data-to="2" role="tab" aria-selected="false" aria-controls="news-slide-3"></button>
+              </div>
+              <div class="news-card__content">
+                <div class="news-card__date">21 сентября</div>
+                <div class="news-card__title">Подборка лучших советов по растяжке</div>
+              </div>
+            </article>
+          </div>
+          <div class="home-slide">
+            <article class="news-card">
+              <img class="news-card__bg" src="./assets/images/train-example.png" alt="news">
+              <div class="news-card__overlay"></div>
+              <div class="home-dots" role="tablist" aria-label="слайды">
+                <button class="home-dot" data-to="0" role="tab" aria-selected="false" aria-controls="news-slide-1"></button>
+                <button class="home-dot" data-to="1" role="tab" aria-selected="false" aria-controls="news-slide-2"></button>
+                <button class="home-dot is-active" data-to="2" role="tab" aria-selected="true" aria-controls="news-slide-3"></button>
+              </div>
+              <div class="news-card__content">
+                <div class="news-card__date">22 сентября</div>
+                <div class="news-card__title">Как восстановиться после тренировки</div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="today-banner">
+        <div class="today-square"><span>8</span></div>
+        <div class="today-text">
+          <div class="today-subtitle">Сегодня</div>
+          <div class="today-title">8 день</div>
+        </div>
+      </section>
+
+      <section class="vector-parent" role="button" tabindex="0" aria-label="Открыть трекер воды">
+        <div class="vector-canvas">
+          <div class="vector-title">Трекер воды</div>
+          <div class="vector-div">Открыть</div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="training-card">
+        <img src="./assets/images/train-example.png" alt="Скульптор" class="training-image">
+        <div class="training-content">
+          <div class="training-badge">Доступно</div>
+          <h2 class="training-title">
+            <span>Скульптор.</span><br>
+            <span>Тренировка 8</span>
+          </h2>
+          <a href="#" class="training-link">Смотреть</a>
+        </div>
+      </section>
+    </main>
+
+    <main class="page water-page" id="water-screen" hidden>
+      <header class="page-header">
+        <h1 class="page-title">Трекер воды</h1>
+      </header>
+
+      <div class="water-target">2 л</div>
+
+      <section class="water-vessel" aria-label="Потребление воды">
+        <div class="water-fill" aria-live="polite" aria-atomic="true">
+          <div class="water-fill__label"><span class="water-amount">0 мл</span></div>
+        </div>
+      </section>
+
+      <section class="water-add">
+        <button type="button" class="water-add__btn" aria-label="Добавить воду">􁻊</button>
+        <div class="water-add__text">Добавить</div>
+      </section>
+
+      <section class="water-info">
+        <h2 class="water-info__title">Почему нужно пить 2 литра воды в день?</h2>
+        <p class="water-info__text">Наше тело примерно на 60% состоит из воды. Она участвует в работе клеток, обмене веществ, поддержании температуры тела, транспортировке питательных веществ и выведении продуктов обмена.</p>
+      </section>
+    </main>
+
+    <main class="page" id="calendar-screen">
+      <header class="page-header">
+        <h1 class="page-title">Календарь</h1>
+      </header>
+
+      <section class="today-banner">
+        <div class="today-square"><span>8</span></div>
+        <div class="today-text">
+          <div class="today-subtitle">Сегодня</div>
+          <div class="today-title">8 день</div>
+        </div>
+      </section>
+
+      <section class="calendar-section">
+        <img src="./assets/images/calendar.png" alt="Календарь" class="calendar-image">
+      </section>
+
+      <section class="legend">
+        <span class="legend-text"><span class="span">Расшифровка символов</span></span>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="training-card">
+        <img src="./assets/images/train-example.png" alt="Скульптор" class="training-image">
+        <div class="training-content">
+          <div class="training-badge">Доступно</div>
+          <h2 class="training-title">
+            <span>Скульптор.</span><br>
+            <span>Тренировка 8</span>
+          </h2>
+          <a href="#" class="training-link">Смотреть</a>
+        </div>
+      </section>
+    </main>
+
+    <main class="page" id="links-screen" hidden>
+      <header class="page-header">
+        <h1 class="page-title">Полезные ссылки</h1>
+      </header>
+
+      <section class="links">
+        <!-- Общий чат -->
+        <article class="link-card">
+          <img class="link-card__image" src="./assets/images/chat-link.png" alt="Общий чат">
+          <h2 class="link-card__title">Общий чат</h2>
+          <p class="link-card__desc">Тут мы делимся общими результатами<br>и о чём-то общаемся умном.</p>
+          <a class="link-card__btn" href="#" target="_blank" rel="noopener">вступить</a>
+        </article>
+
+        <!-- Инстаграм -->
+        <article class="link-card">
+          <img class="link-card__image" src="./assets/images/ig-link.png" alt="Инстаграм PLBV">
+          <h2 class="link-card__title">Инстаграм PLBV</h2>
+          <p class="link-card__desc">Тут мы делимся общими результатами<br>и о чём-то общаемся умном.</p>
+          <div class="link-card__note">Запрещено в РФ</div>
+          <a class="link-card__btn" href="#" target="_blank" rel="noopener">вступить</a>
+        </article>
+      </section>
+    </main>
+
+    <main class="page" id="favorites-screen" hidden>
+      <header class="page-header">
+        <h1 class="page-title">Рейтинг</h1>
+      </header>
+
+      <section class="rating-podium">
+        <img src="./assets/images/rating-stairs.png" alt="Пьедестал" class="rating-podium__bg">
+
+        <div class="podium-avatar podium-avatar--first">
+          <img class="podium-avatar__img" src="./assets/images/train-example.png" alt="Username">
+          <div class="podium-avatar__name">Username</div>
+        </div>
+
+        <div class="podium-avatar podium-avatar--second">
+          <img class="podium-avatar__img podium-avatar__img--left" src="./assets/images/train-example.png" alt="Username">
+          <div class="podium-avatar__name">Username</div>
+        </div>
+
+        <div class="podium-avatar podium-avatar--third">
+          <img class="podium-avatar__img podium-avatar__img--right" src="./assets/images/train-example.png" alt="Username">
+          <div class="podium-avatar__name">Username</div>
+        </div>
+      </section>
+
+      <h2 class="leaderboard-title">Таблица лидеров</h2>
+
+      <section class="leaderboard-list">
+        <div class="leaderboard-row">
+          <div class="leaderboard-num">4</div>
+          <img class="leaderboard-avatar" src="./assets/images/train-example.png" alt="user">
+          <div class="leaderboard-name">Username</div>
+        </div>
+        <div class="leaderboard-divider"></div>
+
+        <div class="leaderboard-row">
+          <div class="leaderboard-num">5</div>
+          <img class="leaderboard-avatar" src="./assets/images/train-example.png" alt="user">
+          <div class="leaderboard-name">Username</div>
+        </div>
+        <div class="leaderboard-divider"></div>
+
+        <div class="leaderboard-row">
+          <div class="leaderboard-num">6</div>
+          <img class="leaderboard-avatar" src="./assets/images/train-example.png" alt="user">
+          <div class="leaderboard-name"><span class="you-tag">Вы</span></div>
+        </div>
+        <div class="leaderboard-divider"></div>
+
+        <div class="leaderboard-row">
+          <div class="leaderboard-num">7</div>
+          <img class="leaderboard-avatar" src="./assets/images/train-example.png" alt="user">
+          <div class="leaderboard-name">Username</div>
+        </div>
+        <div class="leaderboard-divider"></div>
+
+        <div class="leaderboard-row">
+          <div class="leaderboard-num">8</div>
+          <img class="leaderboard-avatar" src="./assets/images/train-example.png" alt="user">
+          <div class="leaderboard-name">Username</div>
+        </div>
+        <div class="leaderboard-divider"></div>
+
+        <div class="leaderboard-row">
+          <div class="leaderboard-num">9</div>
+          <img class="leaderboard-avatar" src="./assets/images/train-example.png" alt="user">
+          <div class="leaderboard-name">Username</div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="nav-btn is-active" data-screen="calendar" aria-label="Календарь"><span class="icon i-calendar" aria-hidden="true"></span></button>
+      <button class="nav-btn" data-screen="links" aria-label="Ссылки"><span class="icon i-links" aria-hidden="true"></span></button>
+      <button class="nav-btn" data-screen="home" aria-label="Новости"><span class="icon i-news" aria-hidden="true"></span></button>
+      <button class="nav-btn" data-screen="favorites" aria-label="Избранное"><span class="icon i-star" aria-hidden="true"></span></button>
+      <button class="nav-btn" aria-label="Профиль">
+        <span class="icon i-sculpture" aria-hidden="true"></span>
+      </button>
+    </nav>
 
     <script src="./app.js"></script>
   </body>
