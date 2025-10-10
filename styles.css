@@ -955,14 +955,41 @@ html, body {
 .gift-card__title { margin: 0 0 16px; color: #000; font-weight: 500; letter-spacing: -0.02em; line-height: 1.06; font-family: 'PP Neue Montreal'; font-size: clamp(22px, 5.6vw, 36px); }
 .gift-card__btn { width: 100%; height: 56px; border: 0; background: #eb3b40; color: #fff; text-transform: uppercase; font-family: 'PP Neue Montreal'; font-size: clamp(16px, 4.4vw, 22px); border-radius: 6px; }
 
-/* ---- Wide screens (tablet/laptop): avoid phone-like background framing ---- */
+/* ---- Wide screens (tablet/laptop): center phone viewport and add side lines ---- */
 @media (min-width: 768px) {
-  /* Remove mobile background artwork to prevent side bars */
-  .page {
-    background-image: none;
+  :root {
+    --phone-width: 430px;
+    --frame-line-width: 2px;
+    --frame-line-gap: 24px;
+    --frame-line-color: #fff;
+    --frame-line-opacity: 0.28;
   }
 
-  /* Use solid background on no-access instead of phone image */
-  .no-access-container { background: #0f0f10; }
-  .no-access-container::before { background-image: none; }
+  /* Decorative vertical lines flanking the phone viewport */
+  body::before, body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: var(--frame-line-width);
+    background: var(--frame-line-color);
+    opacity: var(--frame-line-opacity);
+    pointer-events: none;
+    z-index: 2;
+  }
+  body::before { left: calc(50% - (var(--phone-width) / 2) - var(--frame-line-gap)); }
+  body::after { left: calc(50% + (var(--phone-width) / 2) + var(--frame-line-gap) - var(--frame-line-width)); }
+
+  /* Constrain app pages to phone width */
+  .page { max-width: var(--phone-width); margin-left: auto; margin-right: auto; }
+
+  /* Center fixed footer nav to match phone width */
+  .bottom-nav { left: 50%; right: auto; transform: translateX(-50%); width: var(--phone-width); }
+
+  /* Center gift bottom sheet */
+  .gift-sheet { left: 50%; right: auto; transform: translateX(-50%); width: var(--phone-width); }
+
+  /* Center the no-access overlay to phone width */
+  .no-access-container { width: var(--phone-width); left: 50%; right: auto; transform: translateX(-50%); }
+  .no-access-container::before { width: 100%; }
 }
