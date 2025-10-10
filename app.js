@@ -1,6 +1,29 @@
 (function () {
   const telegramWebApp = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 
+  // Keep CSS --app-height in sync with the real visible viewport height on phones
+  function setupViewportHeightVar(){
+    try {
+      const root = document.documentElement;
+      const vv = window.visualViewport;
+      const update = () => {
+        try {
+          const h = Math.round((vv && typeof vv.height === 'number') ? vv.height : window.innerHeight);
+          if (h && isFinite(h)) {
+            root.style.setProperty('--app-height', h + 'px');
+          }
+        } catch (_) {}
+      };
+      update();
+      window.addEventListener('resize', update);
+      window.addEventListener('orientationchange', update);
+      if (vv && typeof vv.addEventListener === 'function') {
+        vv.addEventListener('resize', update);
+        vv.addEventListener('scroll', update);
+      }
+    } catch (_) {}
+  }
+
   function setThemeFromTelegram(themeParams) {
     if (!themeParams) return;
 
@@ -44,7 +67,6 @@
       if (tg) {
         // Use Telegram's Main Button for purchase flow
         tg.MainButton.setText('Перейти к оплате');
-        tg.MainButton.show();
         tg.onEvent('mainButtonClicked', () => {
           tg.sendData(JSON.stringify({ ...payload, confirmed: true }));
         });
@@ -64,7 +86,6 @@
 
     // Set Main Button for purchase
     tg.MainButton.setText('Купить тренировку');
-    tg.MainButton.show();
 
     tg.onEvent('mainButtonClicked', () => {
       const payload = {
@@ -636,7 +657,110 @@
     }
   }
 
+  // --- Loader and payment gating ---
+  function showLoader(){
+    try { const el = document.getElementById('app-loader'); if (el) el.hidden = false; } catch (_) {}
+  }
+
+  function hideLoader(){
+    try { const el = document.getElementById('app-loader'); if (el) el.hidden = true; } catch (_) {}
+  }
+
+  function whenWindowLoaded(){
+    return new Promise(resolve => {
+      if (document.readyState === 'complete') return resolve();
+      window.addEventListener('load', () => resolve(), { once: true });
+    });
+  }
+
+  function getCheckPaymentEndpoint(){
+    try {
+      if (typeof window !== 'undefined' && typeof window.__CHECK_PAYMENT_ENDPOINT__ === 'string' && window.__CHECK_PAYMENT_ENDPOINT__) {
+        return window.__CHECK_PAYMENT_ENDPOINT__;
+      }
+    } catch (_) {}
+    return 'https://n8n.pervicere.ru/webhook/check_payment';
+  }
+
+  function coerceBoolean(value){
+    try {
+      if (typeof value === 'boolean') return value;
+      if (typeof value === 'number') return value !== 0;
+      if (typeof value === 'string') {
+        const v = value.trim().toLowerCase();
+        return v === 'true' || v === '1' || v === 'yes' || v === 'y' || v === 'ok' || v === 'paid' || v === 'success';
+      }
+      if (Array.isArray(value)) {
+        // prefer the last boolean-like entry
+        for (let i = value.length - 1; i >= 0; i--) {
+          const b = coerceBoolean(value[i]);
+          if (typeof b === 'boolean') return b;
+        }
+      }
+      if (value && typeof value === 'object') {
+        const candidates = [
+          value.respond, value.response, value.result, value.ok, value.paid, value.has_payment,
+          value.data && (value.data.paid ?? value.data.ok ?? value.data.respond ?? value.data.result)
+        ];
+        for (const c of candidates) {
+          const b = coerceBoolean(c);
+          if (typeof b === 'boolean') return b;
+        }
+      }
+    } catch (_) {}
+    return undefined;
+  }
+
+  async function checkPayment(tg){
+    const url = getCheckPaymentEndpoint();
+    const payload = { tg_id: getTelegramUserId(tg) };
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const text = await res.text();
+      const hasBody = typeof text === 'string' && text.trim().length > 0;
+      return hasBody; // есть тело — доступ есть; нулевой ответ — доступа нет
+    } catch (_) {
+      // Ошибка сети трактуем как отсутствует доступ
+      return false;
+    }
+  }
+
+  function showNoAccess(){
+    try {
+      const container = document.querySelector('.no-access-container');
+      if (container) container.hidden = false;
+      // hide all app pages and bottom nav
+      document.querySelectorAll('main.page').forEach(el => { el.hidden = true; });
+      const nav = document.querySelector('.bottom-nav');
+      if (nav) nav.style.display = 'none';
+      // If Telegram available, ensure main button is visible for potential purchase flow
+      if (telegramWebApp && telegramWebApp.MainButton && typeof telegramWebApp.MainButton.show === 'function') {
+        try { telegramWebApp.MainButton.show(); } catch (_) {}
+      }
+    } catch (_) {}
+  }
+
   function boot() {
+    // Ensure pages use maximum visible viewport height
+    setupViewportHeightVar();
+
+    // Start loader immediately
+    showLoader();
+    const loadedPromise = whenWindowLoaded();
+    // Fire payment check in parallel while the app initializes under the loader
+    checkPayment(telegramWebApp).then(isPaid => {
+      if (isPaid) {
+        loadedPromise.then(() => hideLoader());
+      } else {
+        hideLoader();
+        showNoAccess();
+      }
+    });
+
     hideNoAccessByDefault();
     setupBuyButton(telegramWebApp);
 

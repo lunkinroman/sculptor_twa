@@ -1,0 +1,52 @@
+name: Deploy to Beget
+
+on:
+  push:
+    branches: [ main ]  # Деплой при пуше в main ветку
+  workflow_dispatch:    # Возможность запуска вручную
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: vb_website
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Debug secrets and verify files
+      run: |
+        echo "=== Debugging GitHub Secrets ==="
+        echo "FTP_HOST exists: ${{ secrets.FTP_SERVER != '' }}"
+        echo "FTP_USERNAME exists: ${{ secrets.FTP_USERNAME != '' }}"
+        echo "FTP_PASSWORD exists: ${{ secrets.FTP_PASSWORD != '' }}"
+      env:
+        FTP_HOST_VAR: ${{ secrets.FTP_SERVER }}
+        FTP_USERNAME_VAR: ${{ secrets.FTP_USERNAME }}
+        FTP_PASSWORD_VAR: ${{ secrets.FTP_PASSWORD }}
+    
+    - name: Deploy to Beget via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./
+        server-dir: ./
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          .github/**
+          README.md
+          .gitignore
+          DEPLOY_SETUP.md
+          **/*.example
+          package*.json
+          yarn.lock
+        
+    - name: Deployment Success
+      run: |
+        echo "🚀 Deployment completed successfully!"
+        echo "📝 Files deployed to: ${{ secrets.FTP_SERVER }}/"
+        echo "🌐 Check your website to verify the deployment"
