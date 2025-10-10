@@ -17,18 +17,18 @@ jobs:
     - name: Debug secrets and verify files
       run: |
         echo "=== Debugging GitHub Secrets ==="
-        echo "FTP_HOST exists: ${{ secrets.FTP_SERVER != '' }}"
+        echo "FTP_HOST exists: ${{ secrets.FTP_HOST != '' }}"
         echo "FTP_USERNAME exists: ${{ secrets.FTP_USERNAME != '' }}"
         echo "FTP_PASSWORD exists: ${{ secrets.FTP_PASSWORD != '' }}"
       env:
-        FTP_HOST_VAR: ${{ secrets.FTP_SERVER }}
+        FTP_HOST_VAR: ${{ secrets.FTP_HOST }}
         FTP_USERNAME_VAR: ${{ secrets.FTP_USERNAME }}
         FTP_PASSWORD_VAR: ${{ secrets.FTP_PASSWORD }}
     
     - name: Deploy to Beget via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
-        server: ${{ secrets.FTP_SERVER }}
+        server: ${{ secrets.FTP_HOST }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./
