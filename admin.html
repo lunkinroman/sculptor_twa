@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Sculptor Admin</title>
+    <style>
+      :root { --bg: #0f0f10; --panel: #17181a; --panel-2: #1e2023; --text: #ffffff; --muted: #8b8f99; --accent: #eb3b40; --ok: #28c081; --warn: #f5a524; --border: #2a2d33; }
+      html, body { height: 100%; }
+      body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji; }
+      .container { max-width: 964px; margin: 0 auto; padding: 24px 16px 64px; }
+      .page-title { margin: 0 0 16px; font-size: clamp(22px, 4.8vw, 28px); letter-spacing: -0.02em; }
+      .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+      .btn { appearance: none; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); padding: 10px 14px; border-radius: 12px; cursor: pointer; transition: all .2s ease; }
+      .btn:hover { border-color: #3a3e45; transform: translateY(-1px); }
+      .btn--accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn--ok { background: var(--ok); border-color: var(--ok); color: #08130f; }
+      .btn--ghost { background: transparent; }
+      .grid { display: grid; gap: 16px; }
+      .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
+      .panel h2 { margin: 0 0 12px; font-size: 18px; letter-spacing: -0.01em; }
+      .field { display: grid; gap: 6px; }
+      .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      label { color: var(--muted); font-size: 13px; }
+      input[type="text"], input[type="number"], input[type="url"], textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); outline: none; }
+      textarea { resize: vertical; min-height: 64px; }
+      .image-input { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center; }
+      .image-preview { width: 120px; height: 80px; border-radius: 10px; object-fit: cover; background: #0b0b0c; border: 1px solid var(--border); }
+      .note { color: var(--muted); font-size: 13px; }
+      .news-list { display: grid; gap: 12px; }
+      .news-item { display: grid; gap: 10px; grid-template-columns: 80px 1fr auto; align-items: center; background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 10px; }
+      .news-item .thumb { width: 80px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+      .news-fields { display: grid; gap: 8px; }
+      .news-actions { display: flex; gap: 8px; align-items: center; }
+      .drag-handle { cursor: grab; color: var(--muted); padding: 8px; border-radius: 8px; border: 1px dashed var(--border); }
+      .footer { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; }
+      .json-area { width: 100%; box-sizing: border-box; background: #0b0b0c; color: #d7d8db; border: 1px solid var(--border); border-radius: 12px; padding: 12px; min-height: 120px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+      .small { font-size: 12px; color: var(--muted); }
+      .hr { height: 1px; background: var(--border); margin: 10px 0; }
+      .success { color: var(--ok); }
+      .warning { color: var(--warn); }
+      @media (max-width: 720px) { .image-input { grid-template-columns: 1fr; } .field-row { grid-template-columns: 1fr; } .news-item { grid-template-columns: 64px 1fr; } .news-actions { grid-column: 1 / -1; } }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="page-title">Админ · Sculptor</h1>
+      <div class="toolbar">
+        <button id="saveBtn" class="btn btn--ok">Сохранить</button>
+        <button id="resetBtn" class="btn">Сбросить к дефолту</button>
+        <button id="exportBtn" class="btn btn--ghost">Экспорт JSON</button>
+        <button id="importBtn" class="btn btn--ghost">Импорт JSON</button>
+        <a class="btn btn--accent" href="./index.html" target="_blank" rel="noopener">Открыть приложение</a>
+      </div>
+
+      <div class="grid">
+        <section class="panel" id="todaySection">
+          <h2>Сегодня · баннер</h2>
+          <div class="field-row">
+            <div class="field">
+              <label for="todayDay">День</label>
+              <input id="todayDay" type="number" min="1" step="1" placeholder="Например: 8">
+            </div>
+            <div class="field">
+              <label>Предпросмотр</label>
+              <div class="note">На главной и календаре будет: «Сегодня», «N день»</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="trainingSection">
+          <h2>Тренировка · карточка</h2>
+          <div class="image-input">
+            <img id="trainingPreview" class="image-preview" alt="preview">
+            <div class="field-row">
+              <div class="field">
+                <label for="trainingImage">Фото (файл)</label>
+                <input id="trainingImage" type="file" accept="image/*">
+              </div>
+              <div class="field">
+                <label for="trainingImageUrl">Или URL</label>
+                <input id="trainingImageUrl" type="url" placeholder="https://...">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="trainingTitle">Название (поддерживает переносы строк)</label>
+            <textarea id="trainingTitle" placeholder="Скульптор.\nТренировка N"></textarea>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="trainingLinkText">Текст кнопки</label>
+              <input id="trainingLinkText" type="text" placeholder="Смотреть">
+            </div>
+            <div class="field">
+              <label for="trainingLinkHref">Ссылка</label>
+              <input id="trainingLinkHref" type="url" placeholder="# или https://...">
+            </div>
+          </div>
+          <div class="note small">Бейдж «Доступно» остается статичным.</div>
+        </section>
+
+        <section class="panel" id="newsSection">
+          <h2>Новости</h2>
+          <div class="news-list" id="newsList"></div>
+          <div class="footer">
+            <button id="addNewsBtn" class="btn">Добавить новость</button>
+            <div class="small">Перетаскивайте новости для изменения порядка</div>
+          </div>
+        </section>
+
+        <section class="panel" id="jsonSection">
+          <h2>Импорт / Экспорт</h2>
+          <textarea id="jsonArea" class="json-area" placeholder="Здесь появится JSON после экспорта"></textarea>
+          <div class="hr"></div>
+          <div class="small">Ключ хранения: <code>sculptorAdminConfig</code>. Данные используются в основном приложении автоматически.</div>
+        </section>
+      </div>
+    </div>
+
+    <script src="./admin.js"></script>
+  </body>
+  </html>
+
+

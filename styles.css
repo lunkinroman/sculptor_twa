@@ -23,6 +23,11 @@
   --muted: #9aa0a6;
   --accent: #2ea6ff;
   --outline: #2a2d31;
+  --water-color: #eb3b40;
+  --water-color-soft: #ff9aa0;
+  --water-shadow: rgba(235,59,64,0.28);
+  --vessel-border: #f69a9d;
+  --vessel-bg-top: rgba(255,255,255,0.35);
 }
 
 /* Base styles */
@@ -253,6 +258,7 @@ html, body {
 
 /* Calendar image */
 .calendar-section { margin: 12px 0 18px; }
+.calendar-image-about { display: block; width: 100%; height: auto; padding: 0 3px; }
 .calendar-image {
   width: 100%;
   height: auto;
@@ -300,14 +306,14 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 29px; /* half */
-  padding: 0 14px; /* half */
-  border-radius: 20.405px; /* half */
+  height: 22px; /* ~1.2x smaller from previous */
+  padding: 0 10px; /* ~1.2x smaller from previous */
+  border-radius: 15px; /* ~1.2x smaller from previous */
   background: rgba(235, 59, 64, 0.24);
   border: 0.7px solid #eb3b40;
   backdrop-filter: blur(18px);
   color: #000;
-  font-size: 21.295px; /* half */
+  font-size: 16.3px; /* ~1.2x smaller from previous */
   letter-spacing: -0.01em;
   line-height: 1.09;
   margin-bottom: 16px;
@@ -316,7 +322,7 @@ html, body {
 .training-title {
   margin: 0 0 18px;
   font-weight: 500;
-  font-size: clamp(20px, 4vw, 39.74px); /* 1.5x smaller */
+  font-size: clamp(24px, 4.6vw, 43.7px); /* slightly larger */
   letter-spacing: -0.02em;
   line-height: 1;
 }
@@ -679,6 +685,47 @@ html, body {
   height: 15.7px;
 }
 
+/* --- Rating interactions --- */
+/* Keep card interactive at all times; no dimming */
+.home-card .rating-hit { cursor: pointer; transition: transform .08s ease, background-color .12s ease, border-color .12s ease; }
+.home-card .rating-hit:active { transform: scale(0.98); }
+.home-card .is-selected { background-color: rgba(105,149,122,0.22); border-color: #69957A; box-shadow: 0 0 0 2px rgba(105,149,122,0.6) inset; }
+/* Selected circle number color */
+.home-card .is-selected .div,
+.home-card .is-selected .rectangle-div { color: #69957A; }
+
+.rating-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(105,149,122,0.25) 0%, rgba(105,149,122,0.15) 45%, rgba(105,149,122,0.0) 70%);
+  transform: scale(0);
+  animation: rating-ripple .6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes rating-ripple {
+  to { transform: scale(1); opacity: 0; }
+}
+
+.rating-toast {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.96);
+  background: rgba(0,0,0,0.76);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  opacity: 0;
+  transition: opacity .16s ease, transform .18s ease;
+}
+.rating-toast:is(:not(.is-hide)) { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.rating-toast.is-hide { opacity: 0; transform: translate(-50%, -50%) scale(0.98); }
+
 /* ---- News card ---- */
 .news-list { display: grid; gap: 16px; margin-top: 8px; }
 .news-card {
@@ -742,3 +789,105 @@ html, body {
   line-height: 1.16;
   opacity: .95;
 }
+
+/* ---- Water tracker screen ---- */
+.water-page .page-title { color: #000; }
+
+.water-target {
+  width: auto;
+  position: relative;
+  font-size: 26.9px;
+  letter-spacing: -0.02em;
+  line-height: 100%;
+  font-weight: 500;
+  font-family: 'PP Neue Montreal';
+  color: #eb3b40;
+  text-align: center;
+  display: block;
+  opacity: 0.5;
+  margin: 6px auto 14px;
+}
+
+.water-vessel {
+  position: relative;
+  width: 100%;
+  max-width: 160px;
+  height: 360px;
+  margin: 0 auto 20px;
+  border-radius: 40px;
+  border: 4px solid var(--vessel-border);
+  box-sizing: border-box;
+  background: linear-gradient(180deg, var(--vessel-bg-top), rgba(255,255,255,0));
+  overflow: hidden;
+}
+
+.water-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0%; /* dynamic */
+  background: none; /* top edge shaped by waves above the base fill */
+  box-shadow: none;
+  transition: height .4s ease;
+}
+
+.water-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--water-color); /* dynamic via JS */
+  box-shadow: 0 14px 64px var(--water-shadow);
+  z-index: 0; /* sits under the waves */
+  /* hard step earlier so waves cover seam completely */
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) 80px, rgba(0,0,0,1) 80px, rgba(0,0,0,1) 100%);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) 80px, rgba(0,0,0,1) 80px, rgba(0,0,0,1) 100%);
+}
+
+/* At full target: fill to the very top and hide waves */
+.water-fill.is-full::after {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+.water-fill.is-full .water-svg { display: none; }
+
+.water-fill__label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: clamp(18px, 5vw, 30px);
+  letter-spacing: -0.02em;
+  font-family: 'PP Neue Montreal';
+  z-index: 3;
+}
+
+/* Animated liquid waves (SVG) */
+.water-svg { position: absolute; left: -30%; right: -30%; top: -60px; height: 160px; z-index: 2; pointer-events: none; overflow: visible; }
+.water-liquid .wave-back { opacity: .5; filter: saturate(110%); }
+.water-liquid .wave-front { opacity: .92; }
+.water-bubbles circle { fill: rgba(255,255,255,0.55); mix-blend-mode: screen; }
+
+.water-add { margin: 22px 0 8px; }
+.water-add__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; max-width: 320px; margin: 0 auto; }
+@media (min-width: 420px) { .water-add__grid { grid-template-columns: repeat(4, 1fr); max-width: 100%; } }
+.water-add__btn {
+  appearance: none;
+  border: 1px solid #f2b2b4;
+  background: rgba(235,59,64,.08);
+  color: #eb3b40;
+  height: 44px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+}
+.water-add__btn:active { transform: translateY(1px); }
+
+.water-info { margin-top: 22px; color: #000; }
+.water-info__title { font-size: clamp(28px, 6.4vw, 56px); letter-spacing: -0.02em; line-height: 1.02; font-weight: 500; margin: 0 0 10px; }
+.water-info__text { opacity: .6; font-size: clamp(16px, 3.6vw, 22px); line-height: 1.3; }

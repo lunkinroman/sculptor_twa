@@ -6,6 +6,7 @@
     <title>Sculptor - Календарь</title>
     <link rel="stylesheet" href="./styles.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/chroma-js@2.4.2/chroma.min.js"></script>
   </head>
   <body>
     <!-- No access screen (kept for separate flow) -->
@@ -137,13 +138,6 @@
         </div>
       </section>
 
-      <section class="today-banner">
-        <div class="today-square"><span>8</span></div>
-        <div class="today-text">
-          <div class="today-subtitle">Сегодня</div>
-          <div class="today-title">8 день</div>
-        </div>
-      </section>
 
       <section class="vector-parent" role="button" tabindex="0" aria-label="Открыть трекер воды">
         <div class="vector-canvas">
@@ -176,14 +170,38 @@
 
       <section class="water-vessel" aria-label="Потребление воды">
         <div class="water-fill" aria-live="polite" aria-atomic="true">
+          <svg class="water-svg" viewBox="0 0 400 200" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ff9aa0" stop-opacity="0.85"/>
+                <stop offset="1" stop-color="#eb3b40" stop-opacity="1"/>
+              </linearGradient>
+              <filter id="goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo"/>
+                <feBlend in="SourceGraphic" in2="goo"/>
+              </filter>
+            </defs>
+            <g class="water-liquid" filter="url(#goo)">
+              <path class="wave-back" fill="url(#waterGrad)" d=""/>
+              <path class="wave-front" fill="url(#waterGrad)" d=""/>
+            </g>
+            <g class="water-bubbles"></g>
+          </svg>
           <div class="water-fill__label"><span class="water-amount">0 мл</span></div>
         </div>
       </section>
 
       <section class="water-add">
-        <button type="button" class="water-add__btn" aria-label="Добавить воду">􁻊</button>
-        <div class="water-add__text">Добавить</div>
+        <div class="water-add__grid" role="group" aria-label="Добавить воду">
+          <button type="button" class="water-add__btn" data-ml="250" aria-label="Добавить 250 миллилитров">250 мл</button>
+          <button type="button" class="water-add__btn" data-ml="330" aria-label="Добавить 330 миллилитров">330 мл</button>
+          <button type="button" class="water-add__btn" data-ml="500" aria-label="Добавить 500 миллилитров">500 мл</button>
+          <button type="button" class="water-add__btn" data-ml="1000" aria-label="Добавить 1 литр">1 л</button>
+        </div>
       </section>
+
+      <div class="divider"></div>
 
       <section class="water-info">
         <h2 class="water-info__title">Почему нужно пить 2 литра воды в день?</h2>
@@ -208,8 +226,8 @@
         <img src="./assets/images/calendar.png" alt="Календарь" class="calendar-image">
       </section>
 
-      <section class="legend">
-        <span class="legend-text"><span class="span">Расшифровка символов</span></span>
+      <section class="calendar-section">
+        <img src="./assets/images/calendar-about.png" alt="О календаре" class="calendar-image calendar-image-about">
       </section>
 
       <div class="divider"></div>
@@ -237,7 +255,7 @@
         <article class="link-card">
           <img class="link-card__image" src="./assets/images/chat-link.png" alt="Общий чат">
           <h2 class="link-card__title">Общий чат</h2>
-          <p class="link-card__desc">Тут мы делимся общими результатами<br>и о чём-то общаемся умном.</p>
+          <p class="link-card__desc">Тут мы делимся мотивацией, результатами и поддерживаем друг друга. Задавай вопросы, рассказывай о своих победах и вдохновляй других.</p>
           <a class="link-card__btn" href="#" target="_blank" rel="noopener">вступить</a>
         </article>
 
@@ -245,7 +263,7 @@
         <article class="link-card">
           <img class="link-card__image" src="./assets/images/ig-link.png" alt="Инстаграм PLBV">
           <h2 class="link-card__title">Инстаграм PLBV</h2>
-          <p class="link-card__desc">Тут мы делимся общими результатами<br>и о чём-то общаемся умном.</p>
+          <p class="link-card__desc">Все новости, полезные материалы и мотивация на каждый день. Следи за обновлениями марафона здесь!</p>
           <div class="link-card__note">Запрещено в РФ</div>
           <a class="link-card__btn" href="#" target="_blank" rel="noopener">вступить</a>
         </article>
