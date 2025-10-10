@@ -653,9 +653,10 @@
     const favorites = document.getElementById('favorites-screen');
     const home = document.getElementById('home-screen');
     const water = document.getElementById('water-screen');
+    const sculptor = document.getElementById('sculptor-screen');
 
     function show(screen) {
-      const screens = { calendar, links, favorites, home, water };
+      const screens = { calendar, links, favorites, home, water, sculptor };
       Object.entries(screens).forEach(([key, el]) => {
         if (!el) return;
         el.hidden = key !== screen;
@@ -673,7 +674,7 @@
     // keep profile icon active state in sync
     function syncProfileActive() {
       document.querySelectorAll('.bottom-nav .profile-btn').forEach(btn => {
-        btn.classList.toggle('is-active', document.querySelector('.bottom-nav .nav-btn.is-active') === btn);
+        btn.classList.toggle('is-active', btn.classList.contains('is-active'));
       });
     }
     syncProfileActive();
@@ -931,6 +932,26 @@
           if (ml > 0) addCustom(ml);
         }));
       }
+    })();
+
+    // Gift bottom sheet on Sculptor screen
+    (function initGift(){
+      const screen = document.getElementById('sculptor-screen');
+      if (!screen) return;
+      const sheet = screen.querySelector('#gift-sheet');
+      const btn = screen.querySelector('#gift-ok-btn');
+      if (!sheet || !btn) return;
+      // Show sheet with a slight delay when screen becomes visible
+      const observer = new MutationObserver(() => {
+        const visible = !screen.hidden;
+        if (visible) {
+          setTimeout(() => { if (sheet) sheet.hidden = false; }, 200);
+        } else {
+          if (sheet) sheet.hidden = true;
+        }
+      });
+      observer.observe(screen, { attributes: true, attributeFilter: ['hidden'] });
+      btn.addEventListener('click', () => { sheet.hidden = true; });
     })();
 
     // Apply dynamic content from admin config (before carousels init)

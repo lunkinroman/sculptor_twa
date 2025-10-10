@@ -360,7 +360,6 @@ html, body {
   color: rgba(0,0,0,.6);
 }
 .nav-btn.is-active { color: #eb3b40; }
-.nav-btn.profile-btn { position: relative; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 
 /* Icon system using CSS masks to ensure consistent rendering on iOS */
 .nav-btn .icon { display: inline-block; width: 28px; height: 28px; background-color: currentColor; }
@@ -373,6 +372,8 @@ html, body {
 .nav-btn .i-sculpture { -webkit-mask-image: url('./assets/images/sculptor-nav-item.png'); mask-image: url('./assets/images/sculptor-nav-item.png'); }
 /* optional rendering hint (some browsers ignore on masks, harmless otherwise) */
 .nav-btn .i-sculpture { image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; }
+/* align sculpture icon baseline with other icons */
+.bottom-nav .nav-btn .i-sculpture { transform: none; margin-top: 0; position: relative; }
 
 /* ---- Links Screen ---- */
 #links-screen .page-title { color: #000; }
@@ -737,7 +738,7 @@ html, body {
 }
 .news-card__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(80%) brightness(1.02); }
 .news-card__overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(255,255,255,.85) 0%, rgba(255,255,255,.5) 16%, rgba(255,255,255,.15) 40%, rgba(255,255,255,0) 64%); }
-.news-card__content { position: relative; padding: 14px 16px 18px; display: grid; gap: 6px; align-content: end; min-height: inherit; }
+.news-card__content { position: relative; padding: 12px 16px 12px; display: grid; gap: 6px; align-content: end; min-height: inherit; }
 .news-card__date { font-size: clamp(16px, 3vw, 18px); opacity: .3; }
 .news-card__title { margin: 0; letter-spacing: -0.02em; line-height: 1.02; font-size: clamp(20px, 7.2vw, 40px); font-family: 'PP Neue Montreal'; }
 .news-card .home-dots {
@@ -759,6 +760,7 @@ html, body {
   text-align: left;
   color: #fff;
   font-family: 'PP Neue Montreal';
+  margin: 12px 0; /* adjust top/bottom spacing around water tracker banner */
 }
 .vector-canvas {
   position: relative;
@@ -891,3 +893,50 @@ html, body {
 .water-info { margin-top: 22px; color: #000; }
 .water-info__title { font-size: clamp(28px, 6.4vw, 56px); letter-spacing: -0.02em; line-height: 1.02; font-weight: 500; margin: 0 0 10px; }
 .water-info__text { opacity: .6; font-size: clamp(16px, 3.6vw, 22px); line-height: 1.3; }
+
+/* ---- Sculptor Screen ---- */
+#sculptor-screen .page-title { margin: 0; }
+.sculptor-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sculptor-header__right { display: inline-flex; align-items: center; gap: 8px; }
+.sculptor-count {
+  width: auto; height: auto; position: relative;
+  font-size: clamp(20px, 6vw, 69.66px); /* 1.5x меньше заголовка при верхнем пороге */
+  letter-spacing: -0.01em; line-height: 1;
+  font-family: 'PP Neue Montreal'; color: #000; text-align: left;
+  display: inline-block;
+}
+.sculptor-logo { width: 22px; height: 22px; display: inline-block; }
+
+.sculptor-level { margin: 8px 0 14px; }
+.sculptor-level__label {
+  width: auto; height: auto; position: relative;
+  font-size: clamp(22px, 6.4vw, 44px); /* меньше */
+  letter-spacing: -0.01em; line-height: 0.95; font-family: 'PP Neue Montreal';
+  color: #000; text-align: left; display: inline-block; opacity: .7;
+}
+.sculptor-progress { width: 100%; height: 14.4px; position: relative; border-radius: 80px; background-color: rgba(235, 59, 64, 0.28); overflow: hidden; margin-top: 10px; }
+.sculptor-progress__fill { height: 100%; width: 0%; background: #eb3b40; border-radius: inherit; transition: width .35s ease; }
+
+.sculptor-figure { margin-top: 14px; }
+.sculptor-figure__img { display: block; width: 100%; height: auto; }
+
+/* ---- Gift bottom sheet ---- */
+.gift-sheet {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 20;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.75) 15%, rgba(255,255,255,1) 36%);
+}
+.gift-sheet[hidden] { display: none !important; }
+.gift-card {
+  width: 100%;
+  background: #fff;
+  border-radius: 28px 28px 0 0;
+  padding: 22px 18px 18px;
+  box-shadow: 0 -10px 32px rgba(0,0,0,0.12);
+  text-align: center;
+}
+.gift-card__img { width: clamp(140px, 42vw, 220px); height: auto; display: block; margin: 0 auto 14px; }
+.gift-card__title { margin: 0 0 16px; color: #000; font-weight: 500; letter-spacing: -0.02em; line-height: 1.06; font-family: 'PP Neue Montreal'; font-size: clamp(22px, 5.6vw, 36px); }
+.gift-card__btn { width: 100%; height: 56px; border: 0; background: #eb3b40; color: #fff; text-transform: uppercase; font-family: 'PP Neue Montreal'; font-size: clamp(16px, 4.4vw, 22px); border-radius: 6px; }

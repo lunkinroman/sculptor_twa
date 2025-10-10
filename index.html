@@ -270,6 +270,38 @@
       </section>
     </main>
 
+    <main class="page" id="sculptor-screen" hidden>
+      <header class="page-header sculptor-header">
+        <h1 class="page-title">Скульптор</h1>
+        <div class="sculptor-header__right">
+          <div class="sculptor-count" aria-label="счет">25</div>
+          <img class="sculptor-logo" src="./assets/images/icons/sculptor-icon.svg" alt="Sculptor icon">
+        </div>
+      </header>
+
+      <section class="sculptor-level">
+        <div class="sculptor-level__label">1 Уровень</div>
+        <div class="sculptor-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="10">
+          <div class="sculptor-progress__fill" style="width: 10%"></div>
+        </div>
+      </section>
+
+      <section class="sculptor-figure">
+        <img class="sculptor-figure__img" src="./assets/images/level1.png" alt="Статуэтка, уровень 1">
+      </section>
+
+      <section class="gift-sheet" id="gift-sheet" hidden aria-live="polite" aria-label="Подарок после прохождения">
+        <div class="gift-card">
+          <img class="gift-card__img" src="./assets/images/gift.png" alt="Подарок">
+          <h2 class="gift-card__title">
+            <span>Вас ожидает подарок</span><br>
+            <span>после прохождения игры</span>
+          </h2>
+          <button type="button" class="gift-card__btn" id="gift-ok-btn">хорошо</button>
+        </div>
+      </section>
+    </main>
+
     <main class="page" id="favorites-screen" hidden>
       <header class="page-header">
         <h1 class="page-title">Рейтинг</h1>
@@ -345,9 +377,7 @@
       <button class="nav-btn" data-screen="links" aria-label="Ссылки"><span class="icon i-links" aria-hidden="true"></span></button>
       <button class="nav-btn" data-screen="home" aria-label="Новости"><span class="icon i-news" aria-hidden="true"></span></button>
       <button class="nav-btn" data-screen="favorites" aria-label="Избранное"><span class="icon i-star" aria-hidden="true"></span></button>
-      <button class="nav-btn" aria-label="Профиль">
-        <span class="icon i-sculpture" aria-hidden="true"></span>
-      </button>
+      <button class="nav-btn" data-screen="sculptor" aria-label="Скульптор"><span class="icon i-sculpture" aria-hidden="true"></span></button>
     </nav>
 
     <script src="./app.js"></script>
