@@ -1331,15 +1331,33 @@
     (function initSculptorGame(){
       const screen = document.getElementById('sculptor-screen');
       if (!screen) return;
-      if (typeof PIXI === 'undefined' || !PIXI || !PIXI.Application) return;
+
+      let hasPixi = (typeof PIXI !== 'undefined' && PIXI && PIXI.Application);
 
       const figure = screen.querySelector('.sculptor-figure');
       if (!figure) return;
       const fallbackImg = figure.querySelector('.sculptor-figure__img');
 
-      const stageEl = document.createElement('div');
-      stageEl.className = 'sculptor-figure__stage';
-      figure.appendChild(stageEl);
+      let stageEl = null;
+      if (hasPixi) {
+        stageEl = document.createElement('div');
+        stageEl.className = 'sculptor-figure__stage';
+        figure.appendChild(stageEl);
+      }
+
+      // Visibility helpers to avoid showing two statues at once
+      function showFallbackStatue(){
+        try {
+          if (fallbackImg) fallbackImg.style.display = 'block';
+          if (stageEl) stageEl.style.display = 'none';
+        } catch(_) {}
+      }
+      function showPixiStatue(){
+        try {
+          if (stageEl) stageEl.style.display = 'block';
+          if (fallbackImg) fallbackImg.style.display = 'none';
+        } catch(_) {}
+      }
 
       const labelEl = screen.querySelector('.sculptor-level__label');
       const progressEl = screen.querySelector('.sculptor-progress');
@@ -1381,14 +1399,25 @@
       }
 
       // Pixi
-      const { Application, Assets, Sprite, Container, Graphics } = PIXI;
-      const app = new Application();
-      let appReady = false;
-      (async function(){
-        await app.init({ backgroundAlpha: 0, antialias: true, width: 16, height: 16 });
-        stageEl.appendChild(app.canvas);
-        appReady = true;
-      })();
+      let app, appReady = false;
+      let Application, Assets, Sprite, Container, Graphics;
+      if (hasPixi) {
+        ({ Application, Assets, Sprite, Container, Graphics } = PIXI);
+        app = new Application();
+        (async function(){
+          try {
+            await app.init({ backgroundAlpha: 0, antialias: true, width: 16, height: 16 });
+            if (stageEl) stageEl.appendChild(app.canvas);
+            appReady = true;
+            // Keep fallback visible until we draw first level
+            showFallbackStatue();
+          } catch (_) {
+            // Disable Pixi on environments where WebGL/WebGPU is unavailable (e.g., some Telegram webviews)
+            hasPixi = false;
+            showFallbackStatue();
+          }
+        })();
+      }
 
       const srcForLevel = (i) => `./assets/images/level${i}.png`;
 
@@ -1418,6 +1447,7 @@
       }
 
       function confettiBurst(){
+        if (!hasPixi) return;
         const cont = new Container();
         const N = 28;
         for (let i = 0; i < N; i++) {
@@ -1455,17 +1485,53 @@
 
       let currentSprite = null;
       let transitioning = false;
+      let cracksSprite = null;
+      let cracksMask = null;
+
+      // Simple seeded RNG for deterministic cracks per level
+      function mulberry32(seed){
+        let t = seed >>> 0;
+        return function(){
+          t += 0x6D2B79F5;
+          let r = Math.imul(t ^ (t >>> 15), 1 | t);
+          r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+          return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      function computeCracksIntensity(pointsValue){
+        // 0..1 based on level and progress within level
+        const lvl = levelFromPoints(pointsValue);
+        const progress01 = levelProgress(pointsValue) / POINTS_PER_LEVEL; // 0..1
+        const lvlFactor = (lvl - 1) / Math.max(1, (MAX_LEVELS - 1));
+        const intensity = clamp(0.0 + lvlFactor * 0.7 + progress01 * 0.4, 0, 1);
+        return intensity;
+      }
+
+      // Cracks disabled: all related helpers are turned into no-ops
+      function createCracksGraphics(){ return null; }
+      function generateCracksDisplayFor(){ return null; }
+      function placeOverlayToTexture(){}
+      function animateAlpha(){ }
+      function upsertCracksOverlay(){ }
 
       async function showLevel(lvl){
+        if (!hasPixi) return;
         if (!appReady) { setTimeout(() => showLevel(lvl), 20); return; }
         if (transitioning) return;
         transitioning = true;
-        const spr = await loadSprite(lvl);
+        let spr;
+        try {
+          spr = await loadSprite(lvl);
+        } catch (_) {
+          // If texture fails to load, keep fallback image visible and abort transition
+          transitioning = false;
+          return;
+        }
         fitAndPlace(spr, 1.06);
         spr.alpha = 0;
         app.stage.addChild(spr);
-        if (fallbackImg) fallbackImg.style.display = 'none';
-        stageEl.style.display = 'block';
+        showPixiStatue();
 
         const start = performance.now();
         const duration = 420;
@@ -1491,6 +1557,7 @@
             }
             currentSprite = spr;
             transitioning = false;
+            // Cracks disabled
           }
         }
         requestAnimationFrame(step);
@@ -1500,12 +1567,19 @@
         const newLevel = levelFromPoints(points);
         if (newLevel !== level) {
           level = newLevel;
-          showLevel(level);
-          try { if (telegramWebApp && telegramWebApp.HapticFeedback) telegramWebApp.HapticFeedback.notificationOccurred('success'); } catch(_) {}
-          confettiBurst();
+          if (hasPixi) {
+            showLevel(level);
+            try { if (telegramWebApp && telegramWebApp.HapticFeedback) telegramWebApp.HapticFeedback.notificationOccurred('success'); } catch(_) {}
+            confettiBurst();
+          } else {
+            // Update fallback image when Pixi is unavailable
+            if (fallbackImg) fallbackImg.src = srcForLevel(level);
+            showFallbackStatue();
+          }
         } else if (!currentSprite) {
           level = newLevel;
-          showLevel(level);
+          if (hasPixi) showLevel(level);
+          else { if (fallbackImg) fallbackImg.src = srcForLevel(level); showFallbackStatue(); }
         }
       }
 
@@ -1514,6 +1588,9 @@
         savePoints(points);
         applyUi();
         maybeChangeLevel();
+        if (hasPixi) {
+          // Cracks disabled
+        }
       }
 
       function addPoints(delta){
@@ -1527,10 +1604,17 @@
         window.__sculptorGetPoints = () => points;
       } catch(_){}
 
-      function onResize(){ if (currentSprite) fitAndPlace(currentSprite, 1); }
-      window.addEventListener('resize', onResize);
-      const mo = new MutationObserver(() => { if (!screen.hidden) onResize(); });
-      mo.observe(screen, { attributes: true, attributeFilter: ['hidden'] });
+      function onResize(){
+        if (!hasPixi) return;
+        if (currentSprite) fitAndPlace(currentSprite, 1);
+      }
+
+      // Debug hook removed with cracks disabled
+      if (hasPixi) {
+        window.addEventListener('resize', onResize);
+        const mo = new MutationObserver(() => { if (!screen.hidden) onResize(); });
+        mo.observe(screen, { attributes: true, attributeFilter: ['hidden'] });
+      }
 
       applyUi();
       setTimeout(() => { setPoints(points); }, 0);
