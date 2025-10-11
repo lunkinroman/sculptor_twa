@@ -297,6 +297,42 @@ html, body {
   margin: 16px 0 18px;
 }
 
+/* ---- Measure screen ---- */
+.measure-page .page-title { color: #000; font-size: clamp(26.7px, 6vw, 69.66px); flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.measure-page .page-header { position: relative; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.measure-close { position: static; width: auto; height: auto; border: 0; background: none; color: #eb3b40; padding: 0; margin: 0; border-radius: 0; font-size: clamp(28px, 7vw, 44px); line-height: 1; }
+.measure-close:focus, .measure-close:focus-visible { outline: none; }
+.measure-form { display: grid; gap: 26px; margin-top: 8px; }
+.measure-field { display: grid; gap: 10px; }
+.measure-label { color: #000; font-size: clamp(18px, 4.6vw, 30px); opacity: .9; }
+.measure-input {
+  appearance: none;
+  width: 100%;
+  height: 72px;
+  border-radius: 0;
+  border: 1px solid rgba(235,59,64,.2);
+  background: rgba(235,59,64,.12);
+  padding: 18px 16px;
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-size: clamp(18px, 4.6vw, 28px);
+  color: #000;
+}
+.measure-input::placeholder { color: rgba(0,0,0,.35); }
+.measure-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(235,59,64,.25) inset; }
+.measure-input.is-invalid { border-color: #eb3b40; box-shadow: 0 0 0 2px rgba(235,59,64,.35) inset; }
+.measure-error { margin: -6px 0 0; min-height: 18px; color: #eb3b40; font-size: 14px; opacity: .9; }
+.measure-actions { position: static; padding: 0; background: none; height: auto; display: block; margin-top: 24px; }
+.measure-submit { width: 100%; height: 62px; border: 0; border-radius: 0; background: #eb3b40; color: #fff; text-transform: uppercase; font-size: clamp(16px, 4.6vw, 22px); font-weight: 500; appearance: none; -webkit-appearance: none; outline: none; box-shadow: none; -webkit-tap-highlight-color: transparent; }
+.measure-submit:focus, .measure-submit:focus-visible { outline: none; box-shadow: none; }
+.measure-submit:disabled { background: rgba(235,59,64,.35); }
+
+/* hide bottom nav on the measurements screen for focus */
+#measure-screen ~ .bottom-nav { display: grid; }
+#measure-screen:not([hidden]) ~ .bottom-nav { display: none; }
+
+/* reduce extra bottom space on measure screen (bottom nav hidden) */
+.measure-page { padding-bottom: 24px; }
+
 /* Training card */
 .training-card {
   display: grid;

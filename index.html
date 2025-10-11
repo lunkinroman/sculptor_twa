@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Sculptor - Календарь</title>
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./styles.css?v=4">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/chroma-js@2.4.2/chroma.min.js"></script>
   </head>
@@ -212,6 +212,54 @@
       </section>
     </main>
 
+    <main class="page measure-page" id="measure-screen" hidden>
+      <header class="page-header">
+        <h1 class="page-title">Укажи свои данные</h1>
+        <button type="button" class="measure-close" aria-label="Закрыть">✕</button>
+      </header>
+
+      <form id="measure-form" class="measure-form" novalidate>
+        <div class="measure-field">
+          <label for="m-name" class="measure-label">Твоё имя</label>
+          <input id="m-name" name="name" type="text" inputmode="text" autocomplete="name" class="measure-input" required minlength="2" aria-describedby="m-name-err">
+          <p id="m-name-err" class="measure-error" aria-live="polite"></p>
+        </div>
+        <div class="measure-field">
+          <label for="m-weight" class="measure-label">Твой вес (кг)</label>
+          <input id="m-weight" name="weight" type="text" inputmode="decimal" autocomplete="off" class="measure-input" required aria-describedby="m-weight-err">
+          <p id="m-weight-err" class="measure-error" aria-live="polite"></p>
+        </div>
+
+        <div class="measure-field">
+          <label for="m-height" class="measure-label">Твой рост (см)</label>
+          <input id="m-height" name="height" type="text" inputmode="numeric" autocomplete="off" class="measure-input" required aria-describedby="m-height-err">
+          <p id="m-height-err" class="measure-error" aria-live="polite"></p>
+        </div>
+
+        <div class="measure-field">
+          <label for="m-waist" class="measure-label">Обхват талии (см)</label>
+          <input id="m-waist" name="waist" type="text" inputmode="numeric" autocomplete="off" class="measure-input" required aria-describedby="m-waist-err">
+          <p id="m-waist-err" class="measure-error" aria-live="polite"></p>
+        </div>
+
+        <div class="measure-field">
+          <label for="m-chest" class="measure-label">Обхват груди (см)</label>
+          <input id="m-chest" name="chest" type="text" inputmode="numeric" autocomplete="off" class="measure-input" required aria-describedby="m-chest-err">
+          <p id="m-chest-err" class="measure-error" aria-live="polite"></p>
+        </div>
+
+        <div class="measure-field">
+          <label for="m-hips" class="measure-label">Обхват бёдер (см)</label>
+          <input id="m-hips" name="hips" type="text" inputmode="numeric" autocomplete="off" class="measure-input" required aria-describedby="m-hips-err">
+          <p id="m-hips-err" class="measure-error" aria-live="polite"></p>
+        </div>
+
+        <div class="measure-actions">
+          <button type="submit" class="measure-submit" disabled>продолжить</button>
+        </div>
+      </form>
+    </main>
+
     <main class="page" id="calendar-screen">
       <header class="page-header">
         <h1 class="page-title">Календарь</h1>
@@ -383,7 +431,7 @@
       <button class="nav-btn" data-screen="sculptor" aria-label="Скульптор"><span class="icon i-sculpture" aria-hidden="true"></span></button>
     </nav>
 
-    <script src="./app.js"></script>
+    <script src="./app.js?v=8"></script>
   </body>
   </html>
 

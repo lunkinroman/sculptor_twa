@@ -379,6 +379,43 @@
     return 'https://n8n.pervicere.ru/webhook/today_water_balance';
   }
 
+  // Check-before-form endpoint (override via window.__CHECK_BEFORE_FORM_ENDPOINT__)
+  function getCheckBeforeFormEndpoint(){
+    try {
+      if (typeof window !== 'undefined' && typeof window.__CHECK_BEFORE_FORM_ENDPOINT__ === 'string' && window.__CHECK_BEFORE_FORM_ENDPOINT__) {
+        return window.__CHECK_BEFORE_FORM_ENDPOINT__;
+      }
+    } catch (_) {}
+    return 'https://n8n.pervicere.ru/webhook/check_before_form';
+  }
+
+  async function shouldShowMeasureForm(tg){
+    const url = getCheckBeforeFormEndpoint();
+    const payload = { tg_id: getTelegramUserId(tg) };
+    try {
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const text = await res.text();
+      if (typeof text === 'string') {
+        const t = text.trim();
+        if (t === '[]' || t === '[{}]') return true; // treat array with empty object as empty
+      }
+      function isEmptyObject(obj){ return obj && typeof obj === 'object' && !Array.isArray(obj) && Object.keys(obj).length === 0; }
+      function isArrayEmptyLike(arr){ return !Array.isArray(arr) ? false : (arr.length === 0 || arr.every(x => x == null || isEmptyObject(x))); }
+      try {
+        const data = JSON.parse(text);
+        if (Array.isArray(data)) return isArrayEmptyLike(data);
+        if (data && typeof data === 'object') {
+          const arr = data.respond || data.data || data.result;
+          if (Array.isArray(arr)) return isArrayEmptyLike(arr);
+        }
+      } catch (_) {}
+      return false;
+    } catch (_) {
+      // On network errors don't block the app – do not show the form by default
+      return false;
+    }
+  }
+
   async function fetchTodayWaterBalance(tg){
     const url = getTodayWaterEndpoint();
     const payload = { tg_id: getTelegramUserId(tg), date: formatDateKey() };
@@ -440,6 +477,16 @@
     return 'https://n8n.pervicere.ru/webhook/today_mark';
   }
 
+  // Form (measurements) webhook endpoint (override via window.__FORM_BEFORE_ENDPOINT__)
+  function getFormBeforeEndpoint(){
+    try {
+      if (typeof window !== 'undefined' && typeof window.__FORM_BEFORE_ENDPOINT__ === 'string' && window.__FORM_BEFORE_ENDPOINT__) {
+        return window.__FORM_BEFORE_ENDPOINT__;
+      }
+    } catch (_) {}
+    return 'https://n8n.pervicere.ru/webhook/form_before';
+  }
+
   async function fetchTodayMarks(tg){
     const url = getTodayMarkEndpoint();
     const payload = { tg_id: getTelegramUserId(tg), date: formatDateKey() };
@@ -497,6 +544,15 @@
     try {
       const id = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
       return typeof id === 'number' || typeof id === 'string' ? String(id) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function getTelegramPhotoUrl(tg){
+    try {
+      const url = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.photo_url;
+      return typeof url === 'string' && url.trim().length > 0 ? String(url) : null;
     } catch (_) {
       return null;
     }
@@ -778,9 +834,10 @@
     const home = document.getElementById('home-screen');
     const water = document.getElementById('water-screen');
     const sculptor = document.getElementById('sculptor-screen');
+    const measure = document.getElementById('measure-screen');
 
     function show(screen) {
-      const screens = { calendar, links, favorites, home, water, sculptor };
+      const screens = { calendar, links, favorites, home, water, sculptor, measure };
       Object.entries(screens).forEach(([key, el]) => {
         if (!el) return;
         el.hidden = key !== screen;
@@ -811,6 +868,136 @@
       waterBanner.addEventListener('click', openWater);
       waterBanner.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openWater(); } });
     }
+
+    // Measurements screen validation
+    (function initMeasure(){
+      const screen = document.getElementById('measure-screen');
+      const form = screen && screen.querySelector('#measure-form');
+      if (!screen || !form) return;
+
+      const fields = [
+        { id: 'm-name',    name: 'name',    type: 'text',    min: 2,   max: 64 },
+        { id: 'm-weight',  name: 'weight',  type: 'decimal', min: 30,  max: 300 },
+        { id: 'm-height',  name: 'height',  type: 'int',     min: 100, max: 230 },
+        { id: 'm-waist',   name: 'waist',   type: 'int',     min: 40,  max: 180 },
+        { id: 'm-chest',   name: 'chest',   type: 'int',     min: 60,  max: 180 },
+        { id: 'm-hips',    name: 'hips',    type: 'int',     min: 60,  max: 200 }
+      ];
+
+      const inputs = fields.map(f => ({ ...f, el: form.querySelector('#' + f.id), err: form.querySelector('#' + f.id + '-err') }));
+      const submitBtn = form.querySelector('.measure-submit');
+
+      function normalizeValue(str, isDecimal, isText){
+        if (typeof str !== 'string') return '';
+        if (isText) {
+          // allow letters, spaces, hyphens; trim edges and collapse spaces
+          const cleaned = str.replace(/[^a-zA-ZА-Яа-яЁё\-\s]/g, '');
+          return cleaned.replace(/\s+/g, ' ').trimStart();
+        }
+        const s = str.replace(/,/g, '.').replace(/[^0-9.]/g, '');
+        if (!isDecimal) return s.replace(/\..*/, '');
+        const parts = s.split('.');
+        if (parts.length <= 1) return s;
+        return parts[0] + '.' + parts.slice(1).join('').slice(0, 2);
+      }
+
+      function parseValue(str){
+        return str === '' ? NaN : Number(str);
+      }
+
+      function validateField(item){
+        if (!item || !item.el) return false;
+        const raw = item.el.value;
+        const normalized = normalizeValue(raw, item.type === 'decimal', item.type === 'text');
+        if (raw !== normalized) { item.el.value = normalized; }
+        let ok = false;
+        if (item.type === 'text') {
+          const len = normalized.trim().length;
+          ok = len >= item.min && len <= item.max;
+        } else {
+          const num = parseValue(normalized);
+          const isNum = !isNaN(num);
+          const inRange = isNum && num >= item.min && num <= item.max;
+          ok = isNum && inRange;
+        }
+        item.el.classList.toggle('is-invalid', !ok && normalized !== '');
+        if (item.err) {
+          if (item.type === 'text') item.err.textContent = ok || normalized === '' ? '' : `Минимум ${item.min} символа`;
+          else item.err.textContent = ok || normalized === '' ? '' : `Допустимо ${item.min}–${item.max}`;
+        }
+        return ok;
+      }
+
+      function updateSubmit(){
+        const allValid = inputs.every(validateField);
+        if (submitBtn) submitBtn.disabled = !allValid;
+      }
+
+      inputs.forEach(item => {
+        if (!item.el) return;
+        item.el.addEventListener('input', () => { validateField(item); updateSubmit(); });
+        item.el.addEventListener('blur', () => { validateField(item); updateSubmit(); });
+      });
+
+      const closeBtn = screen.querySelector('.measure-close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => { show('calendar'); });
+      }
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        updateSubmit();
+        if (submitBtn && submitBtn.disabled) return;
+
+        const payload = {};
+        inputs.forEach(item => {
+          if (item.type === 'text') payload[item.name] = String(item.el.value).trim();
+          else payload[item.name] = Number(item.el.value.replace(',', '.'));
+        });
+
+        try {
+          const tgId = getTelegramUserId(telegramWebApp);
+          const photo_url = getTelegramPhotoUrl(telegramWebApp);
+          const endpoint = getFormBeforeEndpoint();
+          const data = { tg_id: tgId, photo_url, ...payload, date: formatDateKey() };
+          fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).catch(() => {});
+        } catch (_) {}
+
+        try { if (telegramWebApp && telegramWebApp.HapticFeedback) telegramWebApp.HapticFeedback.notificationOccurred('success'); } catch (_) {}
+        // After submit go back to calendar
+        show('calendar');
+      });
+    })();
+
+    // Routing + pre-check: show measurements only if explicitly routed or backend says it's empty
+    (function initRouting(){
+      function parseTarget(){
+        try {
+          const hash = (location.hash || '').replace('#', '').toLowerCase();
+          const query = new URLSearchParams(location.search);
+          const q = (query.get('screen') || '').toLowerCase();
+          return hash || q;
+        } catch (_) { return ''; }
+      }
+      async function applyRoute(){
+        const target = parseTarget();
+        if (target === 'measure' || target === 'measurements' || target === 'm') {
+          show('measure');
+          return true;
+        }
+        // No explicit route – check if form should be shown
+        const need = await shouldShowMeasureForm(telegramWebApp);
+        if (need) {
+          try { history.replaceState({}, '', '#measure'); } catch (_) {}
+          show('measure');
+          return true;
+        }
+        return false;
+      }
+      applyRoute();
+      window.addEventListener('hashchange', () => { applyRoute(); });
+      window.addEventListener('popstate', () => { applyRoute(); });
+    })();
 
     // Water tracker logic
     (function initWater(){
