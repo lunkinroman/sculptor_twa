@@ -427,6 +427,185 @@
     }
   }
 
+  // --- Top users (leaderboard 1-9) ---
+  function getTopUsersEndpoint(){
+    try {
+      if (typeof window !== 'undefined' && typeof window.__TOP_USERS_ENDPOINT__ === 'string' && window.__TOP_USERS_ENDPOINT__) {
+        return window.__TOP_USERS_ENDPOINT__;
+      }
+    } catch (_) {}
+    return 'https://n8n.pervicere.ru/webhook/top_users';
+  }
+
+  async function fetchTopUsers(tg){
+    const url = getTopUsersEndpoint();
+    let payload = {};
+    try { payload = { tg_id: getTelegramUserId(tg) }; } catch (_) {}
+    try {
+      function tryParseJSON(maybeJson){
+        if (typeof maybeJson !== 'string') return null;
+        const s = maybeJson.trim();
+        if (!s.startsWith('{') && !s.startsWith('[')) return null;
+        try { return JSON.parse(s); } catch (_) { return null; }
+      }
+      function valuesIfUsersObject(obj){
+        if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return [];
+        const vals = Object.values(obj);
+        if (vals.length && vals.every(v => v && typeof v === 'object')) return vals;
+        return [];
+      }
+      function toArray(x){
+        if (Array.isArray(x)) return x;
+        if (typeof x === 'string') {
+          const parsed = tryParseJSON(x);
+          if (Array.isArray(parsed)) return parsed;
+          if (parsed && typeof parsed === 'object') return toArray(parsed);
+          return [];
+        }
+        if (x && typeof x === 'object') {
+          // common wrappers
+          if (Array.isArray(x.respond)) return x.respond;
+          if (Array.isArray(x.data)) return x.data;
+          if (Array.isArray(x.result)) return x.result;
+          if (Array.isArray(x.users)) return x.users;
+
+          // string-wrapped arrays
+          const parsedRespond = toArray(x.respond);
+          if (parsedRespond.length) return parsedRespond;
+          const parsedData = toArray(x.data);
+          if (parsedData.length) return parsedData;
+          const parsedResult = toArray(x.result);
+          if (parsedResult.length) return parsedResult;
+          const parsedUsers = toArray(x.users);
+          if (parsedUsers.length) return parsedUsers;
+
+          // objects keyed by rank/index
+          const vals = valuesIfUsersObject(x);
+          if (vals.length) return vals;
+        }
+        return [];
+      }
+      function normalizeUser(u){
+        const fullName = () => {
+          const first = (u && (u.first_name || u.firstName || u.name_first)) || '';
+          const last = (u && (u.last_name || u.lastName || u.name_last)) || '';
+          const joined = [first, last].map(s => String(s || '').trim()).filter(Boolean).join(' ');
+          return joined || String(u && (u.display_name || u.displayName || u.username || u.name || '') || '').trim() || '—';
+        };
+        const photo = (() => {
+          const p = u && (u.photo || u.photo_url || u.photoUrl || u.avatar || u.picture || u.image);
+          const s = String(p || '').trim();
+          return s ? s : '';
+        })();
+        return { name: fullName(), photo };
+      }
+
+      // Try POST first
+      const resPost = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const textPost = await resPost.text();
+      let dataPost; try { dataPost = JSON.parse(textPost); } catch (_) { dataPost = textPost; }
+      let arr = toArray(dataPost);
+
+      // If POST failed or returned empty, try GET as a fallback
+      if ((!resPost.ok || arr.length === 0)) {
+        try {
+          const resGet = await fetch(url, { method: 'GET' });
+          const textGet = await resGet.text();
+          let dataGet; try { dataGet = JSON.parse(textGet); } catch (_) { dataGet = textGet; }
+          const arrGet = toArray(dataGet);
+          if (arrGet.length > 0) arr = arrGet;
+        } catch (_) {}
+      }
+
+      // Sort by rating desc when available
+      try {
+        arr.sort((a, b) => {
+          const ar = Number(a && (a.rating || a.points || a.score));
+          const br = Number(b && (b.rating || b.points || b.score));
+          const av = isNaN(ar) ? -Infinity : ar;
+          const bv = isNaN(br) ? -Infinity : br;
+          return bv - av;
+        });
+      } catch (_) {}
+      const top = arr.slice(0, 9).map(normalizeUser);
+      return top;
+    } catch (_) { return []; }
+  }
+
+  function renderTopUsers(top){
+    try {
+      const screen = document.getElementById('favorites-screen');
+      if (!screen) return;
+
+      const placeholder = './assets/images/rate-icon.png';
+
+      // Podium 1..3
+      const first = top[0] || {};
+      const second = top[1] || {};
+      const third = top[2] || {};
+
+      const setPodium = (cls, item) => {
+        const root = screen.querySelector('.' + cls);
+        if (!root) return;
+        const img = root.querySelector('.podium-avatar__img');
+        const nameEl = root.querySelector('.podium-avatar__name');
+        if (img) {
+          const src = item.photo && /^https?:\/\//i.test(item.photo) ? item.photo : placeholder;
+          img.setAttribute('src', src);
+          img.setAttribute('alt', item.name ? String(item.name) : 'user');
+        }
+        if (nameEl) nameEl.textContent = item.name ? String(item.name) : '';
+      };
+      setPodium('podium-avatar--first', first);
+      // swap placements: left (second place) should show third, right (third place) should show second
+      setPodium('podium-avatar--second', third);
+      setPodium('podium-avatar--third', second);
+
+      // List 4..9
+      const list = screen.querySelector('.leaderboard-list');
+      if (list) {
+        const frag = document.createDocumentFragment();
+        for (let i = 3; i < Math.min(9, top.length); i++) {
+          const user = top[i] || {};
+          const row = document.createElement('div');
+          row.className = 'leaderboard-row';
+
+          const num = document.createElement('div');
+          num.className = 'leaderboard-num';
+          num.textContent = String(i + 1);
+
+          const img = document.createElement('img');
+          img.className = 'leaderboard-avatar';
+          const src = user.photo && /^https?:\/\//i.test(user.photo) ? user.photo : placeholder;
+          img.setAttribute('src', src);
+          img.setAttribute('alt', 'user');
+
+          const name = document.createElement('div');
+          name.className = 'leaderboard-name';
+          name.textContent = user.name ? String(user.name) : '';
+
+          row.appendChild(num);
+          row.appendChild(img);
+          row.appendChild(name);
+          frag.appendChild(row);
+
+          const divider = document.createElement('div');
+          divider.className = 'leaderboard-divider';
+          frag.appendChild(divider);
+        }
+        list.innerHTML = '';
+        list.appendChild(frag);
+      }
+    } catch (_) {}
+  }
+
+  async function refreshTopUsers(tg){
+    try {
+      const top = await fetchTopUsers(tg);
+      if (Array.isArray(top) && top.length) renderTopUsers(top);
+    } catch (_) {}
+  }
+
   // --- Fetch today's state from backend ---
   function getTodayWaterEndpoint(){
     try {
@@ -460,6 +639,50 @@
       // Treat network or parsing errors as "no data returned" → show the form
       return true;
     }
+  }
+
+  // Gift start/game check endpoint (override via window.__GIFT_CHECK_ENDPOINT__)
+  function getGiftCheckEndpoint(){
+    try {
+      if (typeof window !== 'undefined' && typeof window.__GIFT_CHECK_ENDPOINT__ === 'string' && window.__GIFT_CHECK_ENDPOINT__) {
+        return window.__GIFT_CHECK_ENDPOINT__;
+      }
+    } catch (_) {}
+    return 'https://n8n.pervicere.ru/webhook/start_game';
+  }
+
+  // Decide whether to show gift card: show when endpoint returns empty body
+  async function shouldShowGift(tg){
+    const url = getGiftCheckEndpoint();
+    const payload = { tg_id: getTelegramUserId(tg) };
+    try {
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const text = await res.text();
+      const hasBody = typeof text === 'string' && text.trim().length > 0;
+      // Any non-empty response means the game already started → don't show gift
+      return !hasBody;
+    } catch (_) {
+      // Network error → treat as no data returned → show the gift
+      return true;
+    }
+  }
+
+  // Gift notification endpoint (override via window.__GIFT_NOTIFY_ENDPOINT__)
+  function getGiftNotifyEndpoint(){
+    try {
+      if (typeof window !== 'undefined' && typeof window.__GIFT_NOTIFY_ENDPOINT__ === 'string' && window.__GIFT_NOTIFY_ENDPOINT__) {
+        return window.__GIFT_NOTIFY_ENDPOINT__;
+      }
+    } catch (_) {}
+    return 'https://n8n.pervicere.ru/webhook/get_notification';
+  }
+
+  async function sendGiftNotification(tg){
+    const url = getGiftNotifyEndpoint();
+    const payload = { tg_id: getTelegramUserId(tg), date: formatDateKey() };
+    try {
+      await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    } catch (_) {}
   }
 
   async function fetchTodayWaterBalance(tg){
@@ -877,6 +1100,9 @@
       initInBrowserFallback();
     }
 
+    // Prefetch top users so podium is ready when user opens rating
+    try { setTimeout(() => { refreshTopUsers(telegramWebApp); }, 0); } catch (_) {}
+
     // Wire bottom navigation
     const navButtons = document.querySelectorAll('.bottom-nav .nav-btn[data-screen]');
     const calendar = document.getElementById('calendar-screen');
@@ -897,6 +1123,10 @@
       if (screen === 'home' && typeof window.__scaleHome === 'function') {
         // reflow after becoming visible
         setTimeout(() => window.__scaleHome(), 0);
+      }
+      if (screen === 'favorites') {
+        // refresh leaderboard when opening rating screen
+        setTimeout(() => { try { refreshTopUsers(telegramWebApp); } catch (_) {} }, 0);
       }
     }
 
@@ -1318,13 +1548,22 @@
       const observer = new MutationObserver(() => {
         const visible = !screen.hidden;
         if (visible) {
-          setTimeout(() => { if (sheet) sheet.hidden = false; }, 200);
+          setTimeout(async () => {
+            try {
+              const show = await shouldShowGift(telegramWebApp);
+              if (sheet) sheet.hidden = !show;
+            } catch (_) {}
+          }, 200);
         } else {
           if (sheet) sheet.hidden = true;
         }
       });
       observer.observe(screen, { attributes: true, attributeFilter: ['hidden'] });
-      btn.addEventListener('click', () => { sheet.hidden = true; });
+      btn.addEventListener('click', () => {
+        // Always send notification with tg_id and date
+        try { sendGiftNotification(telegramWebApp); } catch (_) {}
+        sheet.hidden = true;
+      });
     })();
 
     // Sculptor screen: PixiJS-based statue levels
