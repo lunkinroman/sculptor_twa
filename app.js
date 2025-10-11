@@ -369,6 +369,64 @@
     }
   }
 
+  // --- Users rating endpoint (points / rank) ---
+  function getUsersRatingEndpoint(){
+    try {
+      if (typeof window !== 'undefined' && typeof window.__USERS_RATING_ENDPOINT__ === 'string' && window.__USERS_RATING_ENDPOINT__) {
+        return window.__USERS_RATING_ENDPOINT__;
+      }
+    } catch (_) {}
+    return 'https://n8n.pervicere.ru/webhook/users_rating';
+  }
+
+  async function fetchUsersRating(tg){
+    const url = getUsersRatingEndpoint();
+    const payload = { tg_id: getTelegramUserId(tg) };
+    try {
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const text = await res.text();
+      let data; try { data = JSON.parse(text); } catch (_) { data = text; }
+
+      function num(v){ const n = Number(v); return isNaN(n) ? null : n; }
+      function extractPoints(obj){
+        if (!obj || typeof obj !== 'object') return null;
+        const fields = ['points','rating','score','count','value','balance'];
+        for (const k of fields) { const v = num(obj[k]); if (v !== null) return v; }
+        const inner = obj.respond || obj.data || obj.result;
+        if (inner && typeof inner === 'object') return extractPoints(inner);
+        return null;
+      }
+      function extractRank(obj){
+        if (!obj || typeof obj !== 'object') return null;
+        const fields = ['rank','place','position','rating_position'];
+        for (const k of fields) { const v = num(obj[k]); if (v !== null) return v; }
+        const inner = obj.respond || obj.data || obj.result;
+        if (inner && typeof inner === 'object') return extractRank(inner);
+        return null;
+      }
+
+      let points = null; let rank = null;
+      if (typeof data === 'number' || typeof data === 'string') {
+        const n = num(data); if (n !== null) points = n;
+      }
+      if (points === null) {
+        if (Array.isArray(data)) {
+          for (let i = data.length - 1; i >= 0; i--) {
+            const item = data[i];
+            if (typeof item === 'number' || typeof item === 'string') { const n = num(item); if (n !== null) { points = n; break; } }
+            const p = extractPoints(item); if (p !== null) { points = p; rank = extractRank(item); break; }
+          }
+        } else if (data && typeof data === 'object') {
+          points = extractPoints(data);
+          rank = extractRank(data);
+        }
+      }
+      return { points: typeof points === 'number' ? Math.max(0, points) : null, rank: typeof rank === 'number' ? Math.max(1, Math.floor(rank)) : null };
+    } catch (_) {
+      return { points: null, rank: null };
+    }
+  }
+
   // --- Fetch today's state from backend ---
   function getTodayWaterEndpoint(){
     try {
@@ -395,24 +453,12 @@
     try {
       const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const text = await res.text();
-      if (typeof text === 'string') {
-        const t = text.trim();
-        if (t === '[]' || t === '[{}]') return true; // treat array with empty object as empty
-      }
-      function isEmptyObject(obj){ return obj && typeof obj === 'object' && !Array.isArray(obj) && Object.keys(obj).length === 0; }
-      function isArrayEmptyLike(arr){ return !Array.isArray(arr) ? false : (arr.length === 0 || arr.every(x => x == null || isEmptyObject(x))); }
-      try {
-        const data = JSON.parse(text);
-        if (Array.isArray(data)) return isArrayEmptyLike(data);
-        if (data && typeof data === 'object') {
-          const arr = data.respond || data.data || data.result;
-          if (Array.isArray(arr)) return isArrayEmptyLike(arr);
-        }
-      } catch (_) {}
-      return false;
+      const hasBody = typeof text === 'string' && text.trim().length > 0;
+      // Any non-empty response means the form was already submitted → don't show it
+      return !hasBody;
     } catch (_) {
-      // On network errors don't block the app – do not show the form by default
-      return false;
+      // Treat network or parsing errors as "no data returned" → show the form
+      return true;
     }
   }
 
@@ -815,6 +861,11 @@
         hideLoader();
         showNoAccess();
       }
+      // After payment gating resolves, run form check if access is granted and route is not explicit
+      if (isPaid) {
+        try { setTimeout(() => { if (window.__applyFormCheckIfNeeded) window.__applyFormCheckIfNeeded(); }, 0); } catch (_) {}
+        try { loadedPromise.then(() => { if (window.__applyFormCheckIfNeeded) window.__applyFormCheckIfNeeded(); }); } catch (_) {}
+      }
     });
 
     hideNoAccessByDefault();
@@ -880,7 +931,7 @@
         { id: 'm-weight',  name: 'weight',  type: 'decimal', min: 30,  max: 300 },
         { id: 'm-height',  name: 'height',  type: 'int',     min: 100, max: 230 },
         { id: 'm-waist',   name: 'waist',   type: 'int',     min: 40,  max: 180 },
-        { id: 'm-chest',   name: 'chest',   type: 'int',     min: 60,  max: 180 },
+        { id: 'm-chest',   name: 'chest',   type: 'int',     min: 30,  max: 150 },
         { id: 'm-hips',    name: 'hips',    type: 'int',     min: 60,  max: 200 }
       ];
 
@@ -969,7 +1020,7 @@
       });
     })();
 
-    // Routing + pre-check: show measurements only if explicitly routed or backend says it's empty
+    // Routing: show measurements only when explicitly routed
     (function initRouting(){
       function parseTarget(){
         try {
@@ -979,16 +1030,9 @@
           return hash || q;
         } catch (_) { return ''; }
       }
-      async function applyRoute(){
+      function applyRoute(){
         const target = parseTarget();
         if (target === 'measure' || target === 'measurements' || target === 'm') {
-          show('measure');
-          return true;
-        }
-        // No explicit route – check if form should be shown
-        const need = await shouldShowMeasureForm(telegramWebApp);
-        if (need) {
-          try { history.replaceState({}, '', '#measure'); } catch (_) {}
           show('measure');
           return true;
         }
@@ -997,6 +1041,24 @@
       applyRoute();
       window.addEventListener('hashchange', () => { applyRoute(); });
       window.addEventListener('popstate', () => { applyRoute(); });
+    })();
+
+    // After access is granted, check whether we need to show the form
+    (function initFormCheck(){
+      async function applyFormCheckIfNeeded(){
+        try {
+          const hash = (location.hash || '').replace('#', '').toLowerCase();
+          const query = new URLSearchParams(location.search);
+          const q = (query.get('screen') || '').toLowerCase();
+          const target = hash || q;
+          if (target === 'measure' || target === 'measurements' || target === 'm') return; // explicit route wins
+          const need = await shouldShowMeasureForm(telegramWebApp);
+          if (need) {
+            show('measure');
+          }
+        } catch (_) {}
+      }
+      try { window.__applyFormCheckIfNeeded = applyFormCheckIfNeeded; } catch (_) {}
     })();
 
     // Water tracker logic
@@ -1263,6 +1325,236 @@
       });
       observer.observe(screen, { attributes: true, attributeFilter: ['hidden'] });
       btn.addEventListener('click', () => { sheet.hidden = true; });
+    })();
+
+    // Sculptor screen: PixiJS-based statue levels
+    (function initSculptorGame(){
+      const screen = document.getElementById('sculptor-screen');
+      if (!screen) return;
+      if (typeof PIXI === 'undefined' || !PIXI || !PIXI.Application) return;
+
+      const figure = screen.querySelector('.sculptor-figure');
+      if (!figure) return;
+      const fallbackImg = figure.querySelector('.sculptor-figure__img');
+
+      const stageEl = document.createElement('div');
+      stageEl.className = 'sculptor-figure__stage';
+      figure.appendChild(stageEl);
+
+      const labelEl = screen.querySelector('.sculptor-level__label');
+      const progressEl = screen.querySelector('.sculptor-progress');
+      const progressFillEl = progressEl && progressEl.querySelector('.sculptor-progress__fill');
+      const countEl = screen.querySelector('.sculptor-count');
+
+      const MAX_LEVELS = 6;
+      const POINTS_PER_LEVEL = 50;
+      const MAX_POINTS = MAX_LEVELS * POINTS_PER_LEVEL;
+      const STORAGE_KEY = 'sculptor:points';
+
+      function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+      function parseNum(text){ const m = String(text||'').match(/-?\d+/); return m ? Number(m[0]) : 0; }
+      function readPoints(){
+        try {
+          const s = localStorage.getItem(STORAGE_KEY);
+          if (s != null) return clamp(Math.floor(Number(s)||0), 0, MAX_POINTS);
+        } catch(_){}
+        return clamp(parseNum(countEl ? countEl.textContent : '0'), 0, MAX_POINTS);
+      }
+      function savePoints(v){ try { localStorage.setItem(STORAGE_KEY, String(v)); } catch(_){} }
+
+      let points = readPoints();
+      let level = 0;
+
+      function levelFromPoints(p){ return clamp(Math.floor(p / POINTS_PER_LEVEL) + 1, 1, MAX_LEVELS); }
+      function levelProgress(p){ return p % POINTS_PER_LEVEL; }
+      function levelPercent(p){ return Math.round((levelProgress(p) / POINTS_PER_LEVEL) * 100); }
+
+      function applyUi(){
+        const lvl = levelFromPoints(points);
+        if (labelEl) labelEl.textContent = `${lvl} Уровень`;
+        const pct = levelPercent(points);
+        if (progressEl) {
+          progressEl.setAttribute('aria-valuenow', String(pct));
+          if (progressFillEl) progressFillEl.style.width = pct + '%';
+        }
+        if (countEl) countEl.textContent = String(points);
+      }
+
+      // Pixi
+      const { Application, Assets, Sprite, Container, Graphics } = PIXI;
+      const app = new Application();
+      let appReady = false;
+      (async function(){
+        await app.init({ backgroundAlpha: 0, antialias: true, width: 16, height: 16 });
+        stageEl.appendChild(app.canvas);
+        appReady = true;
+      })();
+
+      const srcForLevel = (i) => `./assets/images/level${i}.png`;
+
+      function fitAndPlace(sprite, mult){
+        const containerWidth = figure.clientWidth || stageEl.clientWidth || window.innerWidth || 320;
+        const tex = sprite.texture;
+        const baseScale = containerWidth / (tex && tex.width ? tex.width : 1);
+        const height = Math.max(10, Math.round((tex && tex.height ? tex.height : 1) * baseScale));
+        stageEl.style.height = height + 'px';
+        if (app && app.renderer) {
+          try { app.renderer.resize(containerWidth, height); } catch(_) {}
+        }
+        sprite.anchor.set(0.5, 1);
+        const w = (app.screen && app.screen.width ? app.screen.width : containerWidth);
+        const h = (app.screen && app.screen.height ? app.screen.height : height);
+        sprite.position.set(w / 2, h);
+        const m = typeof mult === 'number' ? mult : 1;
+        sprite.scale.set(baseScale * m);
+      }
+
+      async function loadSprite(lvl){
+        const src = srcForLevel(lvl);
+        try { Assets.add({ alias: `lvl-${lvl}`, src }); } catch(_) {}
+        const tex = await Assets.load(`lvl-${lvl}`);
+        const spr = new Sprite(tex);
+        return spr;
+      }
+
+      function confettiBurst(){
+        const cont = new Container();
+        const N = 28;
+        for (let i = 0; i < N; i++) {
+          const g = new Graphics();
+          const r = 2 + Math.random() * 4;
+          g.beginFill(0xeb3b40, 0.95).drawCircle(0,0,r).endFill();
+          g.x = (app.screen && app.screen.width ? app.screen.width : 0) / 2;
+          g.y = (app.screen && app.screen.height ? app.screen.height : 0) * (0.35 + Math.random() * 0.25);
+          cont.addChild(g);
+          const vx = (Math.random() * 2 - 1) * 160;
+          const vy = - (90 + Math.random() * 180);
+          let life = 0;
+          const rot = (Math.random() * 2 - 1) * 0.15;
+          const tick = (time) => {
+            const dt = Math.min(0.05, (app.ticker.deltaMS || 16) / 1000);
+            g.x += vx * dt;
+            g.y += vy * dt + 280 * dt * life;
+            g.rotation += rot;
+            life += dt;
+            g.alpha = Math.max(0, 1 - life / 1.2);
+            if (g.alpha <= 0) {
+              app.ticker.remove(tick);
+              cont.removeChild(g);
+              g.destroy(true);
+            }
+          };
+          app.ticker.add(tick);
+        }
+        app.stage.addChild(cont);
+        setTimeout(() => {
+          app.stage.removeChild(cont);
+          cont.destroy({ children: true });
+        }, 1600);
+      }
+
+      let currentSprite = null;
+      let transitioning = false;
+
+      async function showLevel(lvl){
+        if (!appReady) { setTimeout(() => showLevel(lvl), 20); return; }
+        if (transitioning) return;
+        transitioning = true;
+        const spr = await loadSprite(lvl);
+        fitAndPlace(spr, 1.06);
+        spr.alpha = 0;
+        app.stage.addChild(spr);
+        if (fallbackImg) fallbackImg.style.display = 'none';
+        stageEl.style.display = 'block';
+
+        const start = performance.now();
+        const duration = 420;
+        const old = currentSprite;
+        const baseScale = spr.scale.x / 1.06;
+
+        function step(now){
+          const t = Math.min(1, (now - start) / duration);
+          spr.alpha = t;
+          const s = baseScale * (1 + 0.06 * (1 - t));
+          spr.scale.set(s);
+          if (old) {
+            old.alpha = 1 - t;
+            const so = old.scale.x * (1 + 0.02 * t);
+            old.scale.set(so);
+          }
+          if (t < 1) {
+            requestAnimationFrame(step);
+          } else {
+            if (old) {
+              app.stage.removeChild(old);
+              old.destroy(true);
+            }
+            currentSprite = spr;
+            transitioning = false;
+          }
+        }
+        requestAnimationFrame(step);
+      }
+
+      async function maybeChangeLevel(){
+        const newLevel = levelFromPoints(points);
+        if (newLevel !== level) {
+          level = newLevel;
+          showLevel(level);
+          try { if (telegramWebApp && telegramWebApp.HapticFeedback) telegramWebApp.HapticFeedback.notificationOccurred('success'); } catch(_) {}
+          confettiBurst();
+        } else if (!currentSprite) {
+          level = newLevel;
+          showLevel(level);
+        }
+      }
+
+      function setPoints(v){
+        points = clamp(v, 0, MAX_POINTS);
+        savePoints(points);
+        applyUi();
+        maybeChangeLevel();
+      }
+
+      function addPoints(delta){
+        setPoints(points + (Number(delta) || 0));
+      }
+
+      // public API
+      try {
+        window.__sculptorAddPoints = addPoints;
+        window.__sculptorSetPoints = setPoints;
+        window.__sculptorGetPoints = () => points;
+      } catch(_){}
+
+      function onResize(){ if (currentSprite) fitAndPlace(currentSprite, 1); }
+      window.addEventListener('resize', onResize);
+      const mo = new MutationObserver(() => { if (!screen.hidden) onResize(); });
+      mo.observe(screen, { attributes: true, attributeFilter: ['hidden'] });
+
+      applyUi();
+      setTimeout(() => { setPoints(points); }, 0);
+
+      // Fetch current rating/points from backend and sync
+      (async function syncFromBackend(){
+        try {
+          const res = await fetchUsersRating(telegramWebApp);
+          if (res && typeof res.points === 'number') {
+            setPoints(res.points);
+          }
+          // optional rank -> update leaderboard if visible
+          if (typeof res.rank === 'number') {
+            try {
+              const youRow = document.querySelector('#favorites-screen .leaderboard-row .you-tag');
+              if (youRow) {
+                const row = youRow.closest('.leaderboard-row');
+                const numEl = row && row.querySelector('.leaderboard-num');
+                if (numEl) numEl.textContent = String(res.rank);
+              }
+            } catch (_) {}
+          }
+        } catch (_) {}
+      })();
     })();
 
     // Apply dynamic content from admin config (before carousels init)
