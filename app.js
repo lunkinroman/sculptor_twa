@@ -1515,15 +1515,12 @@
         function applyStatueStatuses(statuses){
           try {
             const cards = Array.from(screen.querySelectorAll('.task-card'));
+            const toBool = (v) => v === true;
+            const list = Array.isArray(statuses) ? statuses : cards.map(() => (typeof statuses === 'boolean' ? statuses : true));
             cards.forEach((card, i) => {
-              // Force-available for now
-              const ok = true;
-              const btn = card.querySelector('.task-card__go');
-              const lock = card.querySelector('.task-card__lock');
-              if (btn) btn.hidden = !ok;
-              if (lock) lock.hidden = !!ok;
-              card.classList.toggle('is-locked', !ok);
-              card.classList.toggle('is-available', !!ok);
+              const ok = toBool(list[i]);
+              const img = card.querySelector('.task-card__img');
+              if (img) img.classList.toggle('is-dimmed', !ok);
             });
           } catch (_) {}
         }
@@ -1533,10 +1530,13 @@
           if (refreshing) return;
           refreshing = true;
           try {
-            // Force all available
-            const cards = Array.from(screen.querySelectorAll('.task-card'));
-            const statuses = new Array(cards.length).fill(true);
-            applyStatueStatuses(statuses);
+            const statuses = await fetchStatueUsersStatuses(telegramWebApp);
+            if (Array.isArray(statuses)) {
+              applyStatueStatuses(statuses);
+            } else if (typeof statuses === 'boolean') {
+              const cards = Array.from(screen.querySelectorAll('.task-card'));
+              applyStatueStatuses(new Array(cards.length).fill(statuses));
+            }
           } catch (_) {
           } finally {
             refreshing = false;
