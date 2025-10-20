@@ -1962,11 +1962,40 @@
           if (fallbackImg) fallbackImg.style.display = 'none';
         } catch(_) {}
       }
+      function setStatueDimmed(dim){
+        try {
+          if (figure) figure.classList.toggle('is-dimmed', !!dim);
+        } catch(_) {}
+      }
 
       const labelEl = screen.querySelector('.sculptor-level__label');
       const progressEl = screen.querySelector('.sculptor-progress');
       const progressFillEl = progressEl && progressEl.querySelector('.sculptor-progress__fill');
       const countEl = screen.querySelector('.sculptor-count');
+
+      let dimRefreshing = false;
+      async function refreshStatueDimFromBackend(){
+        if (dimRefreshing) return;
+        dimRefreshing = true;
+        try {
+          const statuses = await fetchStatueUsersStatuses(telegramWebApp);
+          let shouldDim = false;
+          if (typeof statuses === 'boolean') {
+            shouldDim = statuses === false;
+          } else if (Array.isArray(statuses)) {
+            if (statuses.length === 1 && typeof statuses[0] === 'boolean') {
+              shouldDim = statuses[0] === false;
+            } else {
+              const anyTrue = statuses.some(Boolean);
+              shouldDim = !anyTrue; // dim when no acquired statues
+            }
+          }
+          setStatueDimmed(shouldDim);
+        } catch (_) {
+        } finally {
+          dimRefreshing = false;
+        }
+      }
 
       const MAX_LEVELS = 6;
       const POINTS_PER_LEVEL = 3; // 3 trainings per level
@@ -2230,6 +2259,7 @@
           const n = await fetchTrainingsCount(telegramWebApp);
           setPoints(n);
         } catch (_) {}
+        try { await refreshStatueDimFromBackend(); } catch (_) {}
       })();
 
       // Refresh trainings count when Sculptor screen becomes visible
@@ -2241,6 +2271,7 @@
           try {
             const n = await fetchTrainingsCount(telegramWebApp);
             setPoints(n);
+            await refreshStatueDimFromBackend();
           } catch (_) {
           } finally {
             refreshing = false;
