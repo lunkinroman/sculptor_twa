@@ -427,6 +427,61 @@
     }
   }
 
+  // --- Trainings count (days counter) endpoint ---
+  function getDaysCounterEndpoint(){
+    try {
+      if (typeof window !== 'undefined' && typeof window.__DAYS_COUNTER_ENDPOINT__ === 'string' && window.__DAYS_COUNTER_ENDPOINT__) {
+        return window.__DAYS_COUNTER_ENDPOINT__;
+      }
+    } catch (_) {}
+    return 'https://n8n.pervicere.ru/webhook/days_conter';
+  }
+
+  async function fetchTrainingsCount(tg){
+    const url = getDaysCounterEndpoint();
+    const payload = { tg_id: getTelegramUserId(tg) };
+    try {
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const text = await res.text();
+      let data; try { data = JSON.parse(text); } catch (_) { data = text; }
+
+      function num(v){ const n = Number(v); return isNaN(n) ? null : Math.max(0, Math.floor(n)); }
+      function extractFromObj(obj){
+        if (!obj || typeof obj !== 'object') return null;
+        const fields = ['n','count','value','trainings','days','total','total_rows'];
+        for (const k of fields) { const v = num(obj[k]); if (v !== null) return v; }
+        const inner = obj.respond || obj.data || obj.result;
+        if (inner && typeof inner === 'object') return extractFromObj(inner);
+        return null;
+      }
+      function extractFromArray(arr){
+        if (!Array.isArray(arr)) return null;
+        for (let i = arr.length - 1; i >= 0; i--) {
+          const v = num(arr[i]);
+          if (v !== null) return v;
+          const o = extractFromObj(arr[i]); if (o !== null) return o;
+        }
+        return null;
+      }
+
+      if (typeof data === 'number' || typeof data === 'string') {
+        const n = num(data);
+        if (n !== null) return Math.min(18, n);
+      }
+      if (Array.isArray(data)) {
+        const v = extractFromArray(data);
+        if (v !== null) return Math.min(18, v);
+      }
+      if (data && typeof data === 'object') {
+        const v = extractFromObj(data);
+        if (v !== null) return Math.min(18, v);
+      }
+      return 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
   // --- Top users (leaderboard 1-9) ---
   function getTopUsersEndpoint(){
     try {
@@ -1789,8 +1844,8 @@
       const countEl = screen.querySelector('.sculptor-count');
 
       const MAX_LEVELS = 6;
-      const POINTS_PER_LEVEL = 50;
-      const MAX_POINTS = MAX_LEVELS * POINTS_PER_LEVEL;
+      const POINTS_PER_LEVEL = 3; // 3 trainings per level
+      const MAX_POINTS = MAX_LEVELS * POINTS_PER_LEVEL; // 18 trainings total
       const STORAGE_KEY = 'sculptor:points';
 
       function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
@@ -1809,17 +1864,19 @@
 
       function levelFromPoints(p){ return clamp(Math.floor(p / POINTS_PER_LEVEL) + 1, 1, MAX_LEVELS); }
       function levelProgress(p){ return p % POINTS_PER_LEVEL; }
-      function levelPercent(p){ return Math.round((levelProgress(p) / POINTS_PER_LEVEL) * 100); }
+      function levelPercent(p){
+        const clamped = clamp(p, 0, MAX_POINTS);
+        if (clamped >= MAX_POINTS) return 100;
+        return Math.round((levelProgress(clamped) / POINTS_PER_LEVEL) * 100);
+      }
 
       function applyUi(){
-        const lvl = levelFromPoints(points);
-        if (labelEl) labelEl.textContent = `${lvl} Уровень`;
         const pct = levelPercent(points);
+        if (labelEl) labelEl.textContent = `${points}/${MAX_POINTS} тренировок`;
         if (progressEl) {
           progressEl.setAttribute('aria-valuenow', String(pct));
           if (progressFillEl) progressFillEl.style.width = pct + '%';
         }
-        if (countEl) countEl.textContent = String(points);
       }
 
       // Pixi
@@ -2043,25 +2100,33 @@
       applyUi();
       setTimeout(() => { setPoints(points); }, 0);
 
-      // Fetch current rating/points from backend and sync
+      // Fetch current trainings count (n) from backend and sync
       (async function syncFromBackend(){
         try {
-          const res = await fetchUsersRating(telegramWebApp);
-          if (res && typeof res.points === 'number') {
-            setPoints(res.points);
-          }
-          // optional rank -> update leaderboard if visible
-          if (typeof res.rank === 'number') {
-            try {
-              const youRow = document.querySelector('#favorites-screen .leaderboard-row .you-tag');
-              if (youRow) {
-                const row = youRow.closest('.leaderboard-row');
-                const numEl = row && row.querySelector('.leaderboard-num');
-                if (numEl) numEl.textContent = String(res.rank);
-              }
-            } catch (_) {}
-          }
+          const n = await fetchTrainingsCount(telegramWebApp);
+          setPoints(n);
         } catch (_) {}
+      })();
+
+      // Refresh trainings count when Sculptor screen becomes visible
+      (function observeSculptorVisibility(){
+        let refreshing = false;
+        async function refresh(){
+          if (refreshing) return;
+          refreshing = true;
+          try {
+            const n = await fetchTrainingsCount(telegramWebApp);
+            setPoints(n);
+          } catch (_) {
+          } finally {
+            refreshing = false;
+          }
+        }
+        const visObserver = new MutationObserver(() => {
+          const visible = !screen.hidden;
+          if (visible) refresh();
+        });
+        visObserver.observe(screen, { attributes: true, attributeFilter: ['hidden'] });
       })();
     })();
 
