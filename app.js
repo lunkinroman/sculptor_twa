@@ -1274,8 +1274,45 @@
     const measure = document.getElementById('measure-screen');
     const tasks = document.getElementById('tasks-screen');
 
+    // Screen state + Telegram BackButton support
+    const allScreens = { calendar, links, favorites, home, water, sculptor, measure, tasks };
+    function detectInitialScreen(){
+      try {
+        for (const [key, el] of Object.entries(allScreens)) { if (el && !el.hidden) return key; }
+      } catch (_) {}
+      return 'calendar';
+    }
+    let currentScreen = detectInitialScreen();
+    let backTarget = null;
+    let backClickHandler = null;
+
+    function updateBackButton(){
+      const tg = telegramWebApp;
+      try {
+        if (!tg || !tg.BackButton) return;
+        if (currentScreen === 'water' || currentScreen === 'tasks') {
+          // Rebind handler with the latest backTarget
+          if (backClickHandler) {
+            try { tg.offEvent('backButtonClicked', backClickHandler); } catch (_) {}
+          }
+          backClickHandler = () => { if (backTarget) { show(backTarget); } };
+          try { tg.onEvent('backButtonClicked', backClickHandler); } catch (_) {}
+          try { tg.BackButton.show(); } catch (_) {}
+        } else {
+          // Hide and cleanup when not on tracked screens
+          if (backClickHandler) {
+            try { tg.offEvent('backButtonClicked', backClickHandler); } catch (_) {}
+            backClickHandler = null;
+          }
+          backTarget = null;
+          try { tg.BackButton.hide(); } catch (_) {}
+        }
+      } catch (_) {}
+    }
+
     function show(screen) {
       const screens = { calendar, links, favorites, home, water, sculptor, measure, tasks };
+      const prev = currentScreen;
       Object.entries(screens).forEach(([key, el]) => {
         if (!el) return;
         el.hidden = key !== screen;
@@ -1289,6 +1326,13 @@
         // refresh leaderboard when opening rating screen
         setTimeout(() => { try { refreshTopUsers(telegramWebApp); } catch (_) {} }, 0);
       }
+
+      // Update screen state and BackButton target/visibility
+      currentScreen = screen;
+      if ((screen === 'water' || screen === 'tasks') && prev && prev !== screen) {
+        backTarget = prev;
+      }
+      updateBackButton();
     }
 
     navButtons.forEach(btn => {
@@ -1302,6 +1346,27 @@
     }
     syncProfileActive();
     navButtons.forEach(btn => btn.addEventListener('click', syncProfileActive));
+
+    // Ensure BackButton is in correct state on boot
+    updateBackButton();
+
+    // Links screen: open Instagram via Telegram openLink (fallback to window.open)
+    try {
+      const igBtn = document.querySelector('#links-screen .link-card:nth-of-type(2) .link-card__btn');
+      if (igBtn) {
+        igBtn.addEventListener('click', (e) => {
+          try { e.preventDefault(); } catch(_) {}
+          const url = 'https://www.instagram.com/plbv.ru';
+          try {
+            if (telegramWebApp && typeof telegramWebApp.openLink === 'function') {
+              telegramWebApp.openLink(url);
+              return;
+            }
+          } catch (_) {}
+          try { window.open(url, '_blank', 'noopener'); } catch (_) {}
+        });
+      }
+    } catch (_) {}
 
     // Water banner opens tracker screen
     const waterBanner = document.querySelector('.vector-parent');
@@ -1442,16 +1507,17 @@
         function hideLocks(indices){ setVisibility('.task-card__lock', false, indices); }
         function showLocks(indices){ setVisibility('.task-card__lock', true, indices); }
 
-        // Hide only buttons by default; keep locks visible
-        hideButtons();
-        showLocks();
+        // Make all tasks available by default
+        showButtons();
+        hideLocks();
 
         // Apply statuses returned from backend (T/F per task-card in DOM order)
         function applyStatueStatuses(statuses){
           try {
             const cards = Array.from(screen.querySelectorAll('.task-card'));
             cards.forEach((card, i) => {
-              const ok = Array.isArray(statuses) && statuses[i] === true;
+              // Force-available for now
+              const ok = true;
               const btn = card.querySelector('.task-card__go');
               const lock = card.querySelector('.task-card__lock');
               if (btn) btn.hidden = !ok;
@@ -1467,10 +1533,11 @@
           if (refreshing) return;
           refreshing = true;
           try {
-            const statuses = await fetchStatueUsersStatuses(telegramWebApp);
+            // Force all available
+            const cards = Array.from(screen.querySelectorAll('.task-card'));
+            const statuses = new Array(cards.length).fill(true);
             applyStatueStatuses(statuses);
           } catch (_) {
-            // keep defaults on failure
           } finally {
             refreshing = false;
           }
@@ -1487,6 +1554,64 @@
         setTimeout(() => { refreshTasksFromBackend(); }, 0);
 
         try { window.__tasks = { hideButtons, showButtons, hideLocks, showLocks, refreshTasksFromBackend }; } catch (_) {}
+      } catch (_) {}
+    })();
+
+    // Tasks info bottom sheet (like gift-sheet)
+    (function initTaskInfoSheet(){
+      try {
+        const screen = document.getElementById('tasks-screen');
+        if (!screen) return;
+        const sheet = document.getElementById('task-info-sheet');
+        const okBtn = document.getElementById('task-info-ok-btn');
+        if (!sheet || !okBtn) return;
+
+        const titleSpan = sheet.querySelector('.task-info-card__title span');
+        const descEl = sheet.querySelector('.task-info-card__desc');
+
+        const TASKS = [
+          {
+            title: 'Пройти 18 тренировок',
+            desc: 'Выполни все 18 тренировок, нажимая “Выполнено” под каждой тренировкой”'
+          },
+          {
+            title: 'Фото/видео в красивом наряде в полный рост',
+            desc: 'Отправь в этот бот фото или видео себя в красивом наряде'
+          },
+          {
+            title: 'Отзыв в формате кружок',
+            desc: 'Отправь видеокружок в этот бот со своим отзывом о Скульпторе'
+          },
+          {
+            title: 'Видео “Мой день”',
+            desc: 'Сними видео по типу “Как проходит мой день”. Включи в него столько активностей из своего дня, сколько считаешь нужным, не забыв указать тренировку Скульптор'
+          },
+          {
+            title: 'Фото до/после',
+            desc: 'Отправь свои фото До и После в этот бот'
+          }
+        ];
+
+        function openSheetFor(index){
+          const item = TASKS[index] || TASKS[0];
+          if (titleSpan) titleSpan.textContent = item.title;
+          if (descEl) descEl.textContent = item.desc;
+          sheet.hidden = false;
+        }
+
+        okBtn.addEventListener('click', () => { sheet.hidden = true; });
+
+        const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
+        cards.forEach((card, idx) => {
+          const btn = card.querySelector('.task-card__go');
+          if (btn) {
+            btn.addEventListener('click', () => openSheetFor(idx));
+          }
+        });
+
+        // Hide sheet if page becomes hidden
+        const mo = new MutationObserver(() => { if (screen.hidden) sheet.hidden = true; });
+        mo.observe(screen, { attributes: true, attributeFilter: ['hidden'] });
       } catch (_) {}
     })();
 
@@ -1866,8 +1991,7 @@
       function levelProgress(p){ return p % POINTS_PER_LEVEL; }
       function levelPercent(p){
         const clamped = clamp(p, 0, MAX_POINTS);
-        if (clamped >= MAX_POINTS) return 100;
-        return Math.round((levelProgress(clamped) / POINTS_PER_LEVEL) * 100);
+        return Math.round((clamped / MAX_POINTS) * 100);
       }
 
       function applyUi(){

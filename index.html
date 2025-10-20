@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Sculptor - Календарь</title>
-    <link rel="stylesheet" href="./styles.css?v=54">
+    <link rel="stylesheet" href="./styles.css?v=2">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/chroma-js@2.4.2/chroma.min.js"></script>
     <script src="https://unpkg.com/pixi.js@8.2.5/dist/pixi.min.js"></script>
@@ -308,7 +308,7 @@
           <img class="link-card__image" src="./assets/images/chat-link.png" alt="Общий чат">
           <h2 class="link-card__title">Общий чат</h2>
           <p class="link-card__desc">Тут мы делимся мотивацией, результатами и поддерживаем друг друга. Задавай вопросы, рассказывай о своих победах и вдохновляй других.</p>
-          <a class="link-card__btn" href="#" target="_blank" rel="noopener">вступить</a>
+          <a class="link-card__btn" href="https://www.instagram.com/plbv.ru" target="_blank" rel="noopener">вступить</a>
         </article>
 
         <!-- Инстаграм -->
@@ -365,7 +365,7 @@
             <img class="task-card__img" src="./assets/images/level6.png" alt="Статуэтка">
             <button type="button" class="task-card__go">пройти</button>
           </div>
-          <div class="task-card__title">18 тренировок</div>
+          <div class="task-card__title">Пройти 18 тренировок</div>
         </article>
 
         <article class="task-card is-available">
@@ -374,7 +374,7 @@
             <img class="task-card__img" src="./assets/images/level6.png" alt="Статуэтка">
             <button type="button" class="task-card__go">пройти</button>
           </div>
-          <div class="task-card__title">Фото до/после</div>
+          <div class="task-card__title">Фото/видео в красивом наряде в полный рост</div>
         </article>
 
         <article class="task-card is-locked">
@@ -383,7 +383,7 @@
             <img class="task-card__img" src="./assets/images/level6.png" alt="Статуэтка">
             <button type="button" class="task-card__go">пройти</button>
           </div>
-          <div class="task-card__title">Как проходит мой день со скульптором</div>
+          <div class="task-card__title">Отзыв в формате кружок</div>
         </article>
 
         <div class="tasks-row tasks-row--two">
@@ -393,7 +393,7 @@
               <img class="task-card__img" src="./assets/images/level6.png" alt="Статуэтка">
               <button type="button" class="task-card__go">пройти</button>
             </div>
-            <div class="task-card__title">Видео в красивом наряде в полный рост</div>
+            <div class="task-card__title">Видео “Мой день”</div>
           </article>
           <article class="task-card is-locked">
             <img class="task-card__lock" src="./assets/images/icons/lcoked.svg" alt="" aria-hidden="true">
@@ -401,8 +401,17 @@
               <img class="task-card__img" src="./assets/images/level6.png" alt="Статуэтка">
               <button type="button" class="task-card__go">пройти</button>
             </div>
-            <div class="task-card__title">Отзыв в формате кружок</div>
+            <div class="task-card__title">Фото до/после</div>
           </article>
+        </div>
+      </section>
+
+      <section class="gift-sheet" id="task-info-sheet" hidden aria-live="polite" aria-label="Информация о задании">
+        <div class="gift-card task-info-card">
+          <img class="gift-card__img task-info-card__img" src="./assets/images/task-info.png" alt="Информация">
+          <h2 class="gift-card__title task-info-card__title"><span></span></h2>
+          <p class="task-info-card__desc"></p>
+          <button type="button" class="gift-card__btn" id="task-info-ok-btn">хорошо</button>
         </div>
       </section>
     </main>
@@ -485,7 +494,7 @@
       <button class="nav-btn" data-screen="sculptor" aria-label="Скульптор"><span class="icon i-sculpture" aria-hidden="true"></span></button>
     </nav>
 
-    <script src="./app.js?v=41"></script>
+    <script src="./app.js?v=2"></script>
   </body>
   </html>
 
