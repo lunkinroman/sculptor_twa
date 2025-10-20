@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Sculptor - Календарь</title>
-    <link rel="stylesheet" href="./styles.css?v=7">
+    <link rel="stylesheet" href="./styles.css?v=53">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/chroma-js@2.4.2/chroma.min.js"></script>
     <script src="https://unpkg.com/pixi.js@8.2.5/dist/pixi.min.js"></script>
@@ -326,8 +326,7 @@
       <header class="page-header sculptor-header">
         <h1 class="page-title">Скульптор</h1>
         <div class="sculptor-header__right">
-          <div class="sculptor-count" aria-label="счет">25</div>
-          <img class="sculptor-logo" src="./assets/images/icons/sculptor-icon.svg" alt="Sculptor icon">
+          <button type="button" class="sculptor-tasks-btn">Задания</button>
         </div>
       </header>
 
@@ -350,6 +349,60 @@
             <span>после прохождения игры</span>
           </h2>
           <button type="button" class="gift-card__btn" id="gift-ok-btn">хорошо</button>
+        </div>
+      </section>
+    </main>
+
+    <main class="page tasks-page" id="tasks-screen" hidden>
+      <header class="page-header">
+        <h1 class="page-title">Задания</h1>
+      </header>
+      <p class="tasks-subtitle">Выполняя каждое задание, ты получаешь промокод на 200 рублей на следующий поток</p>
+
+      <section class="tasks-grid" aria-label="Список заданий">
+        <article class="task-card">
+          <div class="task-card__figure">
+            <img class="task-card__img" src="./assets/images/level6.png" alt="Статуэтка">
+            <button type="button" class="task-card__go">пройти</button>
+          </div>
+          <div class="task-card__title">18 тренировок</div>
+        </article>
+
+        <article class="task-card is-available">
+          <img class="task-card__lock" src="./assets/images/icons/lcoked.svg" alt="" aria-hidden="true">
+          <div class="task-card__figure">
+            <img class="task-card__img" src="./assets/images/level6.png" alt="Статуэтка">
+            <button type="button" class="task-card__go">пройти</button>
+          </div>
+          <div class="task-card__title">Фото до/после</div>
+        </article>
+
+        <article class="task-card is-locked">
+          <img class="task-card__lock" src="./assets/images/icons/lcoked.svg" alt="" aria-hidden="true">
+          <div class="task-card__figure">
+            <img class="task-card__img" src="./assets/images/level6.png" alt="Статуэтка">
+            <button type="button" class="task-card__go">пройти</button>
+          </div>
+          <div class="task-card__title">Как проходит мой день со скульптором</div>
+        </article>
+
+        <div class="tasks-row tasks-row--two">
+          <article class="task-card is-locked">
+            <img class="task-card__lock" src="./assets/images/icons/lcoked.svg" alt="" aria-hidden="true">
+            <div class="task-card__figure">
+              <img class="task-card__img" src="./assets/images/level6.png" alt="Статуэтка">
+              <button type="button" class="task-card__go">пройти</button>
+            </div>
+            <div class="task-card__title">Видео в красивом наряде в полный рост</div>
+          </article>
+          <article class="task-card is-locked">
+            <img class="task-card__lock" src="./assets/images/icons/lcoked.svg" alt="" aria-hidden="true">
+            <div class="task-card__figure">
+              <img class="task-card__img" src="./assets/images/level6.png" alt="Статуэтка">
+              <button type="button" class="task-card__go">пройти</button>
+            </div>
+            <div class="task-card__title">Отзыв в формате кружок</div>
+          </article>
         </div>
       </section>
     </main>
@@ -432,7 +485,7 @@
       <button class="nav-btn" data-screen="sculptor" aria-label="Скульптор"><span class="icon i-sculpture" aria-hidden="true"></span></button>
     </nav>
 
-    <script src="./app.js?v=44"></script>
+    <script src="./app.js?v=49"></script>
   </body>
   </html>
 

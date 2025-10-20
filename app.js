@@ -1054,6 +1054,111 @@
     }
   }
 
+  // --- Statue users (acquired statues) ---
+  function getStatueUsersEndpoint(){
+    try {
+      if (typeof window !== 'undefined' && typeof window.__STATUE_USERS_ENDPOINT__ === 'string' && window.__STATUE_USERS_ENDPOINT__) {
+        return window.__STATUE_USERS_ENDPOINT__;
+      }
+    } catch (_) {}
+    return 'https://n8n.pervicere.ru/webhook/statue_users';
+  }
+
+  async function fetchStatueUsersStatuses(tg){
+    const url = getStatueUsersEndpoint();
+    const payload = { tg_id: getTelegramUserId(tg) };
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const text = await res.text();
+      let data; try { data = JSON.parse(text); } catch(_) { data = text; }
+
+      // Known order mapping → DOM order of task cards
+      const KEY_ORDER = [
+        'task_18_trainings',
+        'task_photo_before_after',
+        'task_day_with_sculptor',
+        'task_video_full_height',
+        'task_review_circle'
+      ];
+
+      function fromKnownObject(obj){
+        if (!obj || typeof obj !== 'object') return null;
+        const first = obj.respond ?? obj.data ?? obj.result ?? obj;
+        if (!first || typeof first !== 'object' || Array.isArray(first)) return null;
+        // If wrapped array inside first, pick the first entry
+        if (Array.isArray(first) && first.length && typeof first[0] === 'object') {
+          return fromKnownObject(first[0]);
+        }
+        // If array at top-level
+        if (Array.isArray(obj) && obj.length && typeof obj[0] === 'object') {
+          return fromKnownObject(obj[0]);
+        }
+        // Produce array strictly in KEY_ORDER
+        const arr = KEY_ORDER.map(k => coerceBoolean(first[k]) === true);
+        // If at least one key existed (true/false), accept; otherwise return null to fallback
+        const hasAny = KEY_ORDER.some(k => k in first);
+        return hasAny ? arr : null;
+      }
+
+      function toBoolArray(x){
+        // primitive string -> try CSV of booleans
+        if (typeof x === 'string') {
+          const s = x.trim();
+          if (s.includes(',') || s.includes('[')) {
+            try {
+              const maybe = JSON.parse(s);
+              return toBoolArray(maybe);
+            } catch(_) {
+              const parts = s.split(/\s*,\s*/g).map(p => coerceBoolean(p));
+              return parts.map(v => v === true);
+            }
+          }
+          const b = coerceBoolean(s);
+          return typeof b === 'boolean' ? [b] : [];
+        }
+        // array -> map each entry
+        if (Array.isArray(x)) {
+          if (x.length && typeof x[0] === 'object') {
+            const known = fromKnownObject(x[0]);
+            if (known) return known;
+          }
+          return x.map(v => coerceBoolean(v) === true);
+        }
+        // object -> unwrap common wrappers or extract boolean-like values in natural key order
+        if (x && typeof x === 'object') {
+          const known = fromKnownObject(x);
+          if (known) return known;
+          const inner = x.respond ?? x.data ?? x.result ?? x.statuses ?? x.values;
+          if (Array.isArray(inner)) return toBoolArray(inner);
+          if (inner && typeof inner === 'object') return toBoolArray(inner);
+          const entries = Object.entries(x);
+          const naturalKey = (k) => {
+            const m = String(k).match(/(\d+)/);
+            const n = m ? parseInt(m[1], 10) : Number.POSITIVE_INFINITY;
+            return [n, String(k)];
+          };
+          entries.sort((a, b) => {
+            const ak = naturalKey(a[0]);
+            const bk = naturalKey(b[0]);
+            return ak[0] === bk[0] ? (ak[1] < bk[1] ? -1 : ak[1] > bk[1] ? 1 : 0) : ak[0] - bk[0];
+          });
+          const arr = entries.map(([, v]) => coerceBoolean(v) === true);
+          // drop trailing falsy-only noise if no true values found
+          return arr;
+        }
+        return [];
+      }
+
+      return toBoolArray(data);
+    } catch (_) {
+      return [];
+    }
+  }
+
   function showNoAccess(){
     try {
       const container = document.querySelector('.no-access-container');
@@ -1112,9 +1217,10 @@
     const water = document.getElementById('water-screen');
     const sculptor = document.getElementById('sculptor-screen');
     const measure = document.getElementById('measure-screen');
+    const tasks = document.getElementById('tasks-screen');
 
     function show(screen) {
-      const screens = { calendar, links, favorites, home, water, sculptor, measure };
+      const screens = { calendar, links, favorites, home, water, sculptor, measure, tasks };
       Object.entries(screens).forEach(([key, el]) => {
         if (!el) return;
         el.hidden = key !== screen;
@@ -1248,6 +1354,85 @@
         // After submit go back to calendar
         show('calendar');
       });
+    })();
+
+    // Tasks screen navigation from Sculptor header
+    (function initTasksNav(){
+      try {
+        const btn = document.querySelector('#sculptor-screen .sculptor-tasks-btn');
+        if (btn) btn.addEventListener('click', () => show('tasks'));
+      } catch (_) {}
+    })();
+
+    // Tasks screen: quick visibility toggles for buttons and locks
+    (function initTasksVisibility(){
+      try {
+        const screen = document.getElementById('tasks-screen');
+        if (!screen) return;
+
+        function toArray(selector){ return Array.from(document.querySelectorAll(selector)); }
+        function normalizeIndices(list, indexOrIndices){
+          if (typeof indexOrIndices === 'number') return [indexOrIndices];
+          if (Array.isArray(indexOrIndices)) return indexOrIndices;
+          return list.map((_, i) => i);
+        }
+        function setVisibility(selector, visible, indexOrIndices){
+          const list = toArray(selector);
+          const idxs = normalizeIndices(list, indexOrIndices);
+          idxs.forEach(i => { const el = list[i]; if (el) el.hidden = !visible; });
+        }
+
+        function hideButtons(indices){ setVisibility('.task-card__go', false, indices); }
+        function showButtons(indices){ setVisibility('.task-card__go', true, indices); }
+        function hideLocks(indices){ setVisibility('.task-card__lock', false, indices); }
+        function showLocks(indices){ setVisibility('.task-card__lock', true, indices); }
+
+        // Hide only buttons by default; keep locks visible
+        hideButtons();
+        showLocks();
+
+        // Apply statuses returned from backend (T/F per task-card in DOM order)
+        function applyStatueStatuses(statuses){
+          try {
+            const cards = Array.from(screen.querySelectorAll('.task-card'));
+            cards.forEach((card, i) => {
+              const ok = Array.isArray(statuses) && statuses[i] === true;
+              const btn = card.querySelector('.task-card__go');
+              const lock = card.querySelector('.task-card__lock');
+              if (btn) btn.hidden = !ok;
+              if (lock) lock.hidden = !!ok;
+              card.classList.toggle('is-locked', !ok);
+              card.classList.toggle('is-available', !!ok);
+            });
+          } catch (_) {}
+        }
+
+        let refreshing = false;
+        async function refreshTasksFromBackend(){
+          if (refreshing) return;
+          refreshing = true;
+          try {
+            const statuses = await fetchStatueUsersStatuses(telegramWebApp);
+            applyStatueStatuses(statuses);
+          } catch (_) {
+            // keep defaults on failure
+          } finally {
+            refreshing = false;
+          }
+        }
+
+        // Refresh when Tasks page becomes visible
+        const observer = new MutationObserver(() => {
+          const visible = !screen.hidden;
+          if (visible) refreshTasksFromBackend();
+        });
+        observer.observe(screen, { attributes: true, attributeFilter: ['hidden'] });
+
+        // Trigger once on boot
+        setTimeout(() => { refreshTasksFromBackend(); }, 0);
+
+        try { window.__tasks = { hideButtons, showButtons, hideLocks, showLocks, refreshTasksFromBackend }; } catch (_) {}
+      } catch (_) {}
     })();
 
     // Routing: show measurements only when explicitly routed
