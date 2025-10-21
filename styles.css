@@ -1015,10 +1015,21 @@ html, body {
 .gift-card__btn { width: 100%; height: 56px; border: 0; background: #eb3b40; color: #fff; text-transform: uppercase; font-family: 'PP Neue Montreal'; font-size: clamp(16px, 4.4vw, 22px); border-radius: 6px; }
 
 /* ---- Task info sheet layout tweaks ---- */
-.task-info-card { position: relative; overflow: hidden; min-height: clamp(200px, 36vh, 420px); display: grid; align-content: center; justify-items: center; padding-right: 0; text-align: center; }
-.task-info-card__title, .task-info-card__desc { position: relative; z-index: 2; text-align: center; }
-.task-info-card__title { margin: 0 0 10px; }
-.task-info-card__desc { margin: 0 0 22px; }
+.task-info-card {
+  position: relative;
+  overflow: hidden;
+  min-height: clamp(200px, 36vh, 420px);
+  display: grid;
+  grid-auto-rows: max-content;
+  align-content: center;
+  justify-items: center;
+  gap: 12px;
+  /* uniform padding; reserve space on the right for the close button */
+  padding: 32px 18px 22px;
+  padding-right: calc(18px + 44px + 6px);
+  text-align: center;
+}
+.task-info-card__title, .task-info-card__desc { position: relative; z-index: 2; text-align: center; margin: 0; }
 /* helper note below the task CTA */
 .task-info-card__note { margin: 8px 0 14px; color: #000; opacity: .9; font-size: clamp(14px, 3.6vw, 18px); text-align: center; }
 /* close button in the corner */
