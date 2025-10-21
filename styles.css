@@ -1015,10 +1015,12 @@ html, body {
 .gift-card__btn { width: 100%; height: 56px; border: 0; background: #eb3b40; color: #fff; text-transform: uppercase; font-family: 'PP Neue Montreal'; font-size: clamp(16px, 4.4vw, 22px); border-radius: 6px; }
 
 /* ---- Task info sheet layout tweaks ---- */
-.task-info-card { position: relative; overflow: hidden; min-height: clamp(260px, 52vh, 520px); display: grid; align-content: start; }
+.task-info-card { position: relative; overflow: hidden; min-height: clamp(200px, 36vh, 420px); display: grid; align-content: start; }
 .task-info-card__title, .task-info-card__desc { position: relative; z-index: 2; }
 .task-info-card__title { margin: 0 0 10px; }
 .task-info-card__desc { margin: 0 0 22px; }
+/* helper note below the task CTA */
+.task-info-card__note { margin: 8px 0 14px; color: #000; opacity: .9; font-size: clamp(14px, 3.6vw, 18px); }
 
 /* ---- Tasks screen ---- */
 .tasks-page .page-title { color: #000; font-size: clamp(40px, 9vw, 104.49px); letter-spacing: -0.02em; line-height: 1.02; font-weight: 500; margin: 0 0 6px; }

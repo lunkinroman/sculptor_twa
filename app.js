@@ -1618,6 +1618,16 @@
 
         const titleSpan = sheet.querySelector('.task-info-card__title span');
         const descEl = sheet.querySelector('.task-info-card__desc');
+        const BOT_UPLOAD_URL = 'https://t.me/sculptor_v1_bot?start=upload_with_love';
+        function openUploadLink(){
+          try {
+            if (telegramWebApp && typeof telegramWebApp.openLink === 'function') {
+              telegramWebApp.openLink(BOT_UPLOAD_URL);
+              return;
+            }
+          } catch (_) {}
+          try { window.open(BOT_UPLOAD_URL, '_blank', 'noopener'); } catch (_) {}
+        }
 
         const TASKS = [
           {
@@ -1649,13 +1659,16 @@
           sheet.hidden = false;
         }
 
-        okBtn.addEventListener('click', () => { sheet.hidden = true; });
+        okBtn.addEventListener('click', (e) => { try { e.preventDefault(); } catch(_) {} openUploadLink(); });
 
         const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
         cards.forEach((card, idx) => {
           const btn = card.querySelector('.task-card__go');
-          if (btn) {
-            btn.addEventListener('click', () => openSheetFor(idx));
+          if (btn) btn.addEventListener('click', () => openSheetFor(idx));
+          const img = card.querySelector('.task-card__img');
+          if (img) {
+            try { img.style.cursor = 'pointer'; } catch(_) {}
+            img.addEventListener('click', (ev) => { try { ev.stopPropagation(); } catch(_) {} openUploadLink(); });
           }
         });
 
