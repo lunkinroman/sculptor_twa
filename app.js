@@ -1198,11 +1198,12 @@
 
       // Known order mapping → DOM order of task cards
       const KEY_ORDER = [
-        'task_18_trainings',
-        'task_photo_before_after',
-        'task_day_with_sculptor',
-        'task_video_full_height',
-        'task_review_circle'
+        // DOM order of task cards in #tasks-screen
+        'task_18_trainings',              // 1) Пройти 18 тренировок
+        'task_video_full_height',         // 2) Фото/видео в красивом наряде в полный рост
+        'task_review_circle',             // 3) Отзыв в формате кружок
+        'task_day_with_sculptor',         // 4) Видео “Мой день”
+        'task_photo_before_after'         // 5) Фото до/после
       ];
 
       function fromKnownObject(obj){
@@ -1590,6 +1591,14 @@
               const ok = toBool(list[i]);
               const img = card.querySelector('.task-card__img');
               if (img) img.classList.toggle('is-dimmed', !ok);
+
+              // If task is completed → hide the "пройти" button and lock
+              if (ok) {
+                const btn = card.querySelector('.task-card__go');
+                if (btn) btn.hidden = true;
+                const lock = card.querySelector('.task-card__lock');
+                if (lock) lock.hidden = true;
+              }
             });
           } catch (_) {}
         }
