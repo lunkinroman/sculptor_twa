@@ -1024,9 +1024,8 @@ html, body {
   align-content: center;
   justify-items: center;
   gap: 12px;
-  /* uniform padding; reserve space on the right for the close button */
-  padding: 32px 18px 22px;
-  padding-right: calc(18px + 44px + 6px);
+  /* uniform padding; only reserve space on top so the close button doesn't overlap */
+  padding: calc(32px + 44px + 6px) 18px 22px;
   text-align: center;
 }
 .task-info-card__title, .task-info-card__desc { position: relative; z-index: 2; text-align: center; margin: 0; }
