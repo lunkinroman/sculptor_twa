@@ -164,9 +164,7 @@
         href: '#'
       },
       news: [
-        { image: './assets/images/train-example.png', date: '20 сентября', title: 'Открыт новый поток на Скульптор!' },
-        { image: './assets/images/train-example.png', date: '21 сентября', title: 'Подборка лучших советов по растяжке' },
-        { image: './assets/images/train-example.png', date: '22 сентября', title: 'Как восстановиться после тренировки' }
+        { image: './assets/images/train-example.png', date: '21 октября', title: 'Предзапись на СКУЛЬПТОР 2.0 уже открыта.', href: 'https://t.me/plbvru_bot?start=start' }
       ]
     };
   }
@@ -186,7 +184,8 @@
       news: news.map(n => ({
         image: n && n.image ? n.image : './assets/images/train-example.png',
         date: n && n.date ? String(n.date) : '',
-        title: n && n.title ? String(n.title) : ''
+        title: n && n.title ? String(n.title) : '',
+        href: n && n.href ? String(n.href) : ''
       }))
     };
   }
@@ -357,6 +356,17 @@
       title.textContent = n.title || '';
       content.appendChild(date);
       content.appendChild(title);
+
+      // Make entire card open Telegram link when href is provided
+      const href = n && typeof n.href === 'string' ? n.href : '';
+      if (href && /^https?:\/\//i.test(href)) {
+        article.classList.add('is-clickable');
+        article.setAttribute('role', 'link');
+        article.setAttribute('tabindex', '0');
+        const open = () => { try { if (!openTelegramLink(href)) { window.location.assign(href); } } catch(_) {} };
+        article.addEventListener('click', (e) => { try { e.preventDefault(); } catch(_) {} open(); });
+        article.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { try { e.preventDefault(); } catch(_) {} open(); } });
+      }
 
       article.appendChild(img);
       article.appendChild(overlay);
