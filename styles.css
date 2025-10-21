@@ -1045,7 +1045,7 @@ html, body {
 .tasks-grid { --tasks-gap-x: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px var(--tasks-gap-x); align-items: start; }
 @media (max-width: 360px) { .tasks-grid { --tasks-gap-x: 12px; gap: 22px var(--tasks-gap-x); } }
 .task-card { position: relative; text-align: center; display: flex; flex-direction: column; align-items: center; }
-.task-card__figure { position: relative; width: 100%; display: block; overflow: hidden; height: clamp(110px, 30vw, 160px); padding-bottom: 40px; }
+.task-card__figure { position: relative; width: 100%; display: block; overflow: hidden; height: clamp(160px, 45vw, 224px); padding-bottom: 40px; }
 .task-card__img { display: block; width: 100%; height: calc(100% - 40px); object-fit: contain; filter: drop-shadow(0 6px 18px rgba(0,0,0,.06)); }
 .task-card__title { margin-top: 10px; color: #000; font-family: 'PP Neue Montreal'; letter-spacing: -0.01em; line-height: 1.1; font-size: clamp(13px, 3.6vw, 20px); }
 .task-card__lock { position: absolute; right: 6px; top: 6px; width: clamp(12px, 3.6vw, 22px); height: auto; opacity: .6; }
@@ -1057,7 +1057,7 @@ html, body {
 
 /* Compact row of two statues placed closer together, same width as top row */
 .tasks-row.tasks-row--two { grid-column: 1 / -1; display: flex; justify-content: center; align-items: flex-start; gap: var(--tasks-gap-x); }
-.tasks-row.tasks-row--two > .task-card { width: calc((100% - var(--tasks-gap-x)) / 2); }
+.tasks-row.tasks-row--two > .task-card { width: calc((100% - (var(--tasks-gap-x) * 2)) / 3); }
 @media (max-width: 360px) { .tasks-row.tasks-row--two { gap: var(--tasks-gap-x); } }
 
 /* ---- Wide screens (tablet/laptop): center phone viewport and add side lines ---- */
