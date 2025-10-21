@@ -1057,7 +1057,7 @@ html, body {
 
 /* Compact row of two statues placed closer together, same width as top row */
 .tasks-row.tasks-row--two { grid-column: 1 / -1; display: flex; justify-content: center; align-items: flex-start; gap: var(--tasks-gap-x); }
-.tasks-row.tasks-row--two > .task-card { width: calc((100% - (var(--tasks-gap-x) * 2)) / 3); }
+.tasks-row.tasks-row--two > .task-card { width: calc((100% - var(--tasks-gap-x)) / 2); }
 @media (max-width: 360px) { .tasks-row.tasks-row--two { gap: var(--tasks-gap-x); } }
 
 /* ---- Wide screens (tablet/laptop): center phone viewport and add side lines ---- */
