@@ -82,6 +82,10 @@
     tg.ready();
     try { tg.expand(); } catch (_) {}
 
+    // Prevent swipe-to-close/minimize; add closing confirmation as extra safety
+    try { if (typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes(); } catch (_) {}
+    try { if (typeof tg.enableClosingConfirmation === 'function') tg.enableClosingConfirmation(); } catch (_) {}
+
     setThemeFromTelegram(tg.themeParams);
 
     // Set Main Button for purchase

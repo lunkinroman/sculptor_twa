@@ -218,6 +218,8 @@ html, body {
   background-size: cover;
   background-position: center;
   padding: 24px 20px 140px; /* leave room for bottom nav */
+  -webkit-overflow-scrolling: touch; /* smooth iOS scrolling */
+  overflow-y: auto; /* ensure vertical scroll on long content */
 }
 
 .page-header { margin-bottom: 12px; }
@@ -946,6 +948,7 @@ html, body {
 
 /* ---- Sculptor Screen ---- */
 #sculptor-screen .page-title { margin: 0; }
+.sculptor-page { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .sculptor-header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .sculptor-header__right { display: inline-flex; align-items: center; gap: 8px; }
 .sculptor-count {
