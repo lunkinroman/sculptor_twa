@@ -106,6 +106,36 @@
     console.log('Running in browser mode');
   }
 
+  function updateChatLink(tg, productName){
+    try {
+      const screen = document.getElementById('links-screen');
+      if (!screen) return;
+      const btn = screen.querySelector('.link-card:nth-of-type(1) .link-card__btn');
+      if (!btn) return;
+      const p = String(productName || '').toLowerCase();
+      let url = '';
+      if (p === 'fat-burn') url = 'https://t.me/+e8-pZ-WgfiI1N2Yy';
+      else if (p === 'postartum' || p === 'postpartum') url = 'https://t.me/+SA8HSVDe7a4zOTZi';
+      if (!url) return;
+      btn.setAttribute('href', url);
+      btn.setAttribute('target', '_blank');
+      btn.setAttribute('rel', 'noopener');
+      if (!btn.dataset.chatBound) {
+        btn.addEventListener('click', (e) => {
+          try { e.preventDefault(); } catch(_) {}
+          try {
+            if (tg && typeof tg.openLink === 'function') {
+              tg.openLink(url);
+              return;
+            }
+          } catch (_) {}
+          try { window.open(url, '_blank', 'noopener'); } catch (_) {}
+        });
+        btn.dataset.chatBound = '1';
+      }
+    } catch (_) {}
+  }
+
   // Admin config: load and apply dynamic content
   const ADMIN_STORAGE_KEY = 'sculptorAdminConfig';
 
@@ -1102,6 +1132,16 @@
       });
       const text = await res.text();
       const hasBody = typeof text === 'string' && text.trim().length > 0;
+      // try to extract product_name and cache it
+      try {
+        const data = JSON.parse(text);
+        const arr = Array.isArray(data) ? data : (Array.isArray(data?.respond) ? data.respond : []);
+        const first = Array.isArray(arr) && arr.length ? arr[0] : (data && typeof data === 'object' ? data : null);
+        const pn = first && typeof first.product_name === 'string' ? first.product_name : null;
+        if (pn) {
+          try { window.__PRODUCT_NAME = pn; } catch (_) {}
+        }
+      } catch (_) {}
       return hasBody; // есть тело — доступ есть; нулевой ответ — доступа нет
     } catch (_) {
       // Ошибка сети трактуем как отсутствует доступ
@@ -1244,6 +1284,8 @@
         hideLoader();
         showNoAccess();
       }
+      // Update chat link based on product_name when available
+      try { updateChatLink(telegramWebApp, (typeof window !== 'undefined' && window.__PRODUCT_NAME) ? window.__PRODUCT_NAME : null); } catch (_) {}
       // After payment gating resolves, run form check if access is granted and route is not explicit
       if (isPaid) {
         try { setTimeout(() => { if (window.__applyFormCheckIfNeeded) window.__applyFormCheckIfNeeded(); }, 0); } catch (_) {}
@@ -1507,9 +1549,17 @@
         function hideLocks(indices){ setVisibility('.task-card__lock', false, indices); }
         function showLocks(indices){ setVisibility('.task-card__lock', true, indices); }
 
-        // Make all tasks available by default
-        showButtons();
-        hideLocks();
+        // Show button only for "Фото/видео в красивом наряде в полный рост"
+        // and display locks on "Отзыв в формате кружок", "Видео “Мой день”", "Фото до/после"
+        try {
+          const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
+          cards.forEach((card, idx) => {
+            const btn = card.querySelector('.task-card__go');
+            if (btn) btn.hidden = idx !== 1; // only the 2nd card keeps the button
+            const lock = card.querySelector('.task-card__lock');
+            if (lock) lock.hidden = !(idx === 2 || idx === 3 || idx === 4);
+          });
+        } catch (_) {}
 
         // Apply statuses returned from backend (T/F per task-card in DOM order)
         function applyStatueStatuses(statuses){
