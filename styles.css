@@ -1048,7 +1048,7 @@ html, body {
 .task-card__img { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 6px 18px rgba(0,0,0,.06)); }
 .task-card__title { margin-top: 10px; color: #000; font-family: 'PP Neue Montreal'; letter-spacing: -0.01em; line-height: 1.1; font-size: clamp(13px, 3.6vw, 20px); }
 .task-card__lock { position: absolute; right: 6px; top: 6px; width: clamp(12px, 3.6vw, 22px); height: auto; opacity: .6; }
-.task-card__go { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; height: 40px; padding: 0 12px; border-radius: 0; border: 0; background: #eb3b40; color: #fff; font-family: 'PP Neue Montreal'; font-size: clamp(14px, 3.8vw, 18px); text-transform: uppercase; }
+.task-card__go { position: absolute; left: 0; right: 0; bottom: 0; z-index: 30; height: 40px; padding: 0 12px; border-radius: 0; border: 0; background: #eb3b40; color: #fff; font-family: 'PP Neue Montreal'; font-size: clamp(14px, 3.8vw, 18px); text-transform: uppercase; }
 .task-card__img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .task-card__img.is-dimmed { opacity: .5; }
 .task-card.is-locked .task-card__img { opacity: .5; filter: grayscale(0.1) brightness(0.92); }
