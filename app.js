@@ -108,13 +108,19 @@
 
   function openTelegramLink(url){
     try {
-      if (telegramWebApp && typeof telegramWebApp.openLink === 'function') {
-        // normalize via wrapper: delegate to itself to ensure single path
-        try { telegramWebApp.openLink(url); } catch(_) {}
-        return true;
+      if (telegramWebApp) {
+        if (typeof telegramWebApp.openTelegramLink === 'function') {
+          try { telegramWebApp.openTelegramLink(url); } catch (_) {}
+          return true;
+        }
+        if (typeof telegramWebApp.openLink === 'function') {
+          try { telegramWebApp.openLink(url); } catch(_) {}
+          return true;
+        }
       }
     } catch (_) {}
-    try { window.open(url, '_blank', 'noopener'); return true; } catch (_) {}
+    try { window.location.assign(url); return true; } catch (_) {}
+    try { window.location.href = url; return true; } catch (_) {}
     return false;
   }
 
@@ -130,13 +136,15 @@
       else if (p === 'postartum' || p === 'postpartum') url = 'https://t.me/+SA8HSVDe7a4zOTZi';
       if (!url) return;
       btn.setAttribute('href', url);
-      btn.setAttribute('target', '_blank');
-      btn.setAttribute('rel', 'noopener');
+      btn.removeAttribute('target');
+      btn.removeAttribute('rel');
       if (!btn.dataset.chatBound) {
         btn.addEventListener('click', (e) => {
           try { e.preventDefault(); } catch(_) {}
-          try { if (tg && typeof tg.openLink === 'function') { openTelegramLink(url); return; } } catch (_) {}
-          try { window.open(url, '_blank', 'noopener'); } catch (_) {}
+          try {
+            if (tg) { if (!openTelegramLink(url)) { window.location.assign(url); } return; }
+          } catch (_) {}
+          try { window.location.assign(url); } catch (_) {}
         });
         btn.dataset.chatBound = '1';
       }
@@ -1406,8 +1414,7 @@
         igBtn.addEventListener('click', (e) => {
           try { e.preventDefault(); } catch(_) {}
           const url = 'https://www.instagram.com/plbv.ru';
-          try { if (telegramWebApp && typeof telegramWebApp.openLink === 'function') { openTelegramLink(url); return; } } catch (_) {}
-          try { window.open(url, '_blank', 'noopener'); } catch (_) {}
+          try { if (!openTelegramLink(url)) { window.location.assign(url); } } catch (_) {}
         });
       }
     } catch (_) {}
