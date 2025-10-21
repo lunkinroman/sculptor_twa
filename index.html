@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Sculptor - Календарь</title>
-    <link rel="stylesheet" href="./styles.css?v=8">
+    <link rel="stylesheet" href="./styles.css?v=9">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/chroma-js@2.4.2/chroma.min.js"></script>
     <script src="https://unpkg.com/pixi.js@8.2.5/dist/pixi.min.js"></script>
@@ -357,7 +357,7 @@
       <header class="page-header">
         <h1 class="page-title">Задания</h1>
       </header>
-      <p class="tasks-subtitle">Выполняя каждое задание, ты получаешь промокод на 200 рублей на следующий поток</p>
+      <p class="tasks-subtitle">За каждое задание ты получаешь 1 статуэтку<br><br>Каждая статуэтка дает скидку 200₽ при оплате следующего потока. Статуэтки суммируются<br><br>Максимальное количество статуэток: 5</p>
 
       <section class="tasks-grid" aria-label="Список заданий">
         <article class="task-card">
@@ -408,6 +408,7 @@
 
       <section class="gift-sheet" id="task-info-sheet" hidden aria-live="polite" aria-label="Информация о задании">
         <div class="gift-card task-info-card">
+          <button type="button" class="task-info-close" aria-label="Закрыть">✕</button>
           <h2 class="gift-card__title task-info-card__title"><span></span></h2>
           <p class="task-info-card__desc"></p>
           <p class="task-info-card__note">❗️ Пожалуйста, сверните приложение после нажатия кнопки</p>
@@ -494,7 +495,7 @@
       <button class="nav-btn" data-screen="sculptor" aria-label="Скульптор"><span class="icon i-sculpture" aria-hidden="true"></span></button>
     </nav>
 
-    <script src="./app.js?v=8"></script>
+    <script src="./app.js?v=9"></script>
   </body>
   </html>
 

@@ -109,7 +109,8 @@
   function openTelegramLink(url){
     try {
       if (telegramWebApp && typeof telegramWebApp.openLink === 'function') {
-        telegramWebApp.openLink(url);
+        // normalize via wrapper: delegate to itself to ensure single path
+        try { telegramWebApp.openLink(url); } catch(_) {}
         return true;
       }
     } catch (_) {}
@@ -134,12 +135,7 @@
       if (!btn.dataset.chatBound) {
         btn.addEventListener('click', (e) => {
           try { e.preventDefault(); } catch(_) {}
-          try {
-            if (tg && typeof tg.openLink === 'function') {
-              tg.openLink(url);
-              return;
-            }
-          } catch (_) {}
+          try { if (tg && typeof tg.openLink === 'function') { openTelegramLink(url); return; } } catch (_) {}
           try { window.open(url, '_blank', 'noopener'); } catch (_) {}
         });
         btn.dataset.chatBound = '1';
@@ -1410,12 +1406,7 @@
         igBtn.addEventListener('click', (e) => {
           try { e.preventDefault(); } catch(_) {}
           const url = 'https://www.instagram.com/plbv.ru';
-          try {
-            if (telegramWebApp && typeof telegramWebApp.openLink === 'function') {
-              telegramWebApp.openLink(url);
-              return;
-            }
-          } catch (_) {}
+          try { if (telegramWebApp && typeof telegramWebApp.openLink === 'function') { openTelegramLink(url); return; } } catch (_) {}
           try { window.open(url, '_blank', 'noopener'); } catch (_) {}
         });
       }
@@ -1629,6 +1620,7 @@
 
         const titleSpan = sheet.querySelector('.task-info-card__title span');
         const descEl = sheet.querySelector('.task-info-card__desc');
+        const closeBtn = sheet.querySelector('.task-info-close');
         const BOT_UPLOAD_URL = 'https://t.me/sculptor_v1_bot?start=upload_with_love';
         function openUploadLink(){ openTelegramLink(BOT_UPLOAD_URL); }
 
@@ -1668,14 +1660,9 @@
         cards.forEach((card, idx) => {
           const btn = card.querySelector('.task-card__go');
           if (btn) btn.addEventListener('click', () => openSheetFor(idx));
-          const img = card.querySelector('.task-card__img');
-          if (img) {
-            try { img.style.cursor = 'pointer'; } catch(_) {}
-            img.addEventListener('click', (ev) => { try { ev.stopPropagation(); } catch(_) {} openUploadLink(); });
-          }
         });
 
-        // Allow closing the sheet by clicking outside the card and via Escape
+        // Allow closing the sheet by clicking outside the card, via Escape, or by close button
         try {
           sheet.addEventListener('click', (ev) => {
             try {
@@ -1684,6 +1671,7 @@
               if (!isInsideCard) sheet.hidden = true;
             } catch (_) {}
           });
+          if (closeBtn) closeBtn.addEventListener('click', () => { sheet.hidden = true; });
           document.addEventListener('keydown', (ev) => {
             try { if (!sheet.hidden && ev.key === 'Escape') sheet.hidden = true; } catch (_) {}
           });
