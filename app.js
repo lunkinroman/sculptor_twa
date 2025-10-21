@@ -108,17 +108,26 @@
 
   function openTelegramLink(url){
     try {
+      const s = String(url || '');
+      const isTg = /^tg:|^https?:\/\/(t\.me|telegram\.me|telegram\.org)\//i.test(s);
       if (telegramWebApp) {
-        if (typeof telegramWebApp.openTelegramLink === 'function') {
-          try { telegramWebApp.openTelegramLink(url); } catch (_) {}
+        // Prefer dedicated method for Telegram links, use openLink for everything else
+        if (isTg && typeof telegramWebApp.openTelegramLink === 'function') {
+          try { telegramWebApp.openTelegramLink(s); } catch (_) {}
           return true;
         }
         if (typeof telegramWebApp.openLink === 'function') {
-          try { telegramWebApp.openLink(url); } catch(_) {}
+          try { telegramWebApp.openLink(s); } catch (_) {}
+          return true;
+        }
+        // Fallback: if only openTelegramLink exists and URL is Telegram
+        if (isTg && typeof telegramWebApp.openTelegramLink === 'function') {
+          try { telegramWebApp.openTelegramLink(s); } catch (_) {}
           return true;
         }
       }
     } catch (_) {}
+    try { window.open(url, '_blank', 'noopener'); return true; } catch (_) {}
     try { window.location.assign(url); return true; } catch (_) {}
     try { window.location.href = url; return true; } catch (_) {}
     return false;
