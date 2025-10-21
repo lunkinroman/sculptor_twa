@@ -106,6 +106,17 @@
     console.log('Running in browser mode');
   }
 
+  function openTelegramLink(url){
+    try {
+      if (telegramWebApp && typeof telegramWebApp.openLink === 'function') {
+        telegramWebApp.openLink(url);
+        return true;
+      }
+    } catch (_) {}
+    try { window.open(url, '_blank', 'noopener'); return true; } catch (_) {}
+    return false;
+  }
+
   function updateChatLink(tg, productName){
     try {
       const screen = document.getElementById('links-screen');
@@ -1619,15 +1630,7 @@
         const titleSpan = sheet.querySelector('.task-info-card__title span');
         const descEl = sheet.querySelector('.task-info-card__desc');
         const BOT_UPLOAD_URL = 'https://t.me/sculptor_v1_bot?start=upload_with_love';
-        function openUploadLink(){
-          try {
-            if (telegramWebApp && typeof telegramWebApp.openLink === 'function') {
-              telegramWebApp.openLink(BOT_UPLOAD_URL);
-              return;
-            }
-          } catch (_) {}
-          try { window.open(BOT_UPLOAD_URL, '_blank', 'noopener'); } catch (_) {}
-        }
+        function openUploadLink(){ openTelegramLink(BOT_UPLOAD_URL); }
 
         const TASKS = [
           {
@@ -1671,6 +1674,20 @@
             img.addEventListener('click', (ev) => { try { ev.stopPropagation(); } catch(_) {} openUploadLink(); });
           }
         });
+
+        // Allow closing the sheet by clicking outside the card and via Escape
+        try {
+          sheet.addEventListener('click', (ev) => {
+            try {
+              const target = ev.target;
+              const isInsideCard = !!(target && typeof target.closest === 'function' && target.closest('.gift-card'));
+              if (!isInsideCard) sheet.hidden = true;
+            } catch (_) {}
+          });
+          document.addEventListener('keydown', (ev) => {
+            try { if (!sheet.hidden && ev.key === 'Escape') sheet.hidden = true; } catch (_) {}
+          });
+        } catch (_) {}
 
         // Hide sheet if page becomes hidden
         const mo = new MutationObserver(() => { if (screen.hidden) sheet.hidden = true; });
