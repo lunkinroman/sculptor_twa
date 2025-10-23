@@ -1582,15 +1582,15 @@
         function hideLocks(indices){ setVisibility('.task-card__lock', false, indices); }
         function showLocks(indices){ setVisibility('.task-card__lock', true, indices); }
 
-        // Show button only for "Фото/видео в красивом наряде в полный рост"
-        // and display locks on "Отзыв в формате кружок", "Видео “Мой день”", "Фото до/после"
+        // Show buttons for: 2) Фото/видео ... , 3) Отзыв в формате кружок, 4) Видео "Мой день"
+        // Remove locks for: 3) и 4) как просили
         try {
           const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
           cards.forEach((card, idx) => {
             const btn = card.querySelector('.task-card__go');
-            if (btn) btn.hidden = idx !== 1; // only the 2nd card keeps the button
+            if (btn) btn.hidden = !(idx === 1 || idx === 2 || idx === 3);
             const lock = card.querySelector('.task-card__lock');
-            if (lock) lock.hidden = !(idx === 2 || idx === 3 || idx === 4);
+            if (lock) lock.hidden = (idx === 2 || idx === 3) ? true : !(idx === 2 || idx === 3 || idx === 4);
           });
         } catch (_) {}
 
@@ -1686,13 +1686,24 @@
           }
         ];
 
+        const TASK_LINKS = {
+          2: 'https://t.me/sculptor_v1_bot?start=review', // Отзыв в формате кружок
+          3: 'https://t.me/sculptor_v1_bot?start=my_day'  // Видео “Мой день”
+        };
+
         function openSheetFor(index){
           const item = TASKS[index] || TASKS[0];
           if (titleSpan) titleSpan.textContent = item.title;
           if (descEl) descEl.textContent = item.desc;
           sheet.hidden = false;
+          // Update CTA destination depending on selected task
+          try {
+            const href = TASK_LINKS[index];
+            okBtn.onclick = (e) => { try { e.preventDefault(); } catch(_) {} openTelegramLink(href || 'https://t.me/sculptor_v1_bot?start=upload_with_love'); };
+          } catch (_) {}
         }
 
+        // Default action (if opened for non-mapped items)
         okBtn.addEventListener('click', (e) => { try { e.preventDefault(); } catch(_) {} openUploadLink(); });
 
         const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
