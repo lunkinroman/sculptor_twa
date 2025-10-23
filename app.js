@@ -1691,6 +1691,14 @@
           3: 'https://t.me/sculptor_v1_bot?start=my_day'  // Видео “Мой день”
         };
 
+        // ensure only one handler is attached to the CTA at any given time
+        let okHandler = null;
+        function setOkHandler(fn){
+          try { if (okHandler) okBtn.removeEventListener('click', okHandler); } catch(_) {}
+          okHandler = function(e){ try { e.preventDefault(); } catch(_) {} try { fn(); } catch(_) {} };
+          okBtn.addEventListener('click', okHandler);
+        }
+
         function openSheetFor(index){
           const item = TASKS[index] || TASKS[0];
           if (titleSpan) titleSpan.textContent = item.title;
@@ -1699,12 +1707,11 @@
           // Update CTA destination depending on selected task
           try {
             const href = TASK_LINKS[index];
-            okBtn.onclick = (e) => { try { e.preventDefault(); } catch(_) {} openTelegramLink(href || 'https://t.me/sculptor_v1_bot?start=upload_with_love'); };
+            if (href) setOkHandler(() => openTelegramLink(href)); else setOkHandler(openUploadLink);
           } catch (_) {}
         }
-
         // Default action (if opened for non-mapped items)
-        okBtn.addEventListener('click', (e) => { try { e.preventDefault(); } catch(_) {} openUploadLink(); });
+        setOkHandler(openUploadLink);
 
         const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
         cards.forEach((card, idx) => {
