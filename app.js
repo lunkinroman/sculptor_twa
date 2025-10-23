@@ -1607,6 +1607,8 @@
 
               // If task is completed → hide the "пройти" button and lock
               if (ok) {
+                // Ensure full opacity by removing parent lock state
+                card.classList.remove('is-locked');
                 const btn = card.querySelector('.task-card__go');
                 if (btn) btn.hidden = true;
                 const lock = card.querySelector('.task-card__lock');
