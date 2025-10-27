@@ -1588,9 +1588,9 @@
           const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
           cards.forEach((card, idx) => {
             const btn = card.querySelector('.task-card__go');
-            if (btn) btn.hidden = !(idx === 1 || idx === 2 || idx === 3);
+            if (btn) btn.hidden = !(idx === 1 || idx === 2 || idx === 3 || idx === 4);
             const lock = card.querySelector('.task-card__lock');
-            if (lock) lock.hidden = (idx === 2 || idx === 3) ? true : !(idx === 2 || idx === 3 || idx === 4);
+            if (lock) lock.hidden = (idx === 2 || idx === 3 || idx === 4) ? true : !(idx === 2 || idx === 3 || idx === 4);
           });
         } catch (_) {}
 
@@ -1690,7 +1690,8 @@
 
         const TASK_LINKS = {
           2: 'https://t.me/sculptor_v1_bot?start=review', // Отзыв в формате кружок
-          3: 'https://t.me/sculptor_v1_bot?start=my_day'  // Видео “Мой день”
+          3: 'https://t.me/sculptor_v1_bot?start=my_day', // Видео “Мой день”
+          4: 'https://t.me/sculptor_v1_bot?start=loadafter' // Фото до/после
         };
 
         // ensure only one handler is attached to the CTA at any given time
