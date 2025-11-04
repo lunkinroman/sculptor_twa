@@ -246,6 +246,11 @@
     const safeFallback = Number(fallbackDay) > 0 ? Math.floor(Number(fallbackDay)) : 1;
     try {
       const { month, day } = getMoscowDateParts();
+      if (month === 11) {
+        // 5 ноября → 1 день, 25 ноября → 21 день
+        const idx = Number(day) - 4;
+        return Math.max(1, Math.min(21, idx));
+      }
       if (month === 10) {
         // 1 октября → 1 день, 2 октября → 2 день ... максимум 30
         return Math.max(1, Math.min(30, Number(day)));
@@ -259,19 +264,29 @@
   function computeTrainingTitleLinesFromMoscowDate(fallbackLines){
     try {
       const { month, day } = getMoscowDateParts();
-      if (month !== 10) return fallbackLines;
+      const medDays = [3, 8, 15];
 
-      const d = Number(day);
-      const meditationIndex = ({ 3: 1, 8: 2, 15: 3 })[d];
-      if (meditationIndex) {
-        return ['Скульптор.', `Медитация ${meditationIndex}`];
+      if (month === 11) {
+        // Map calendar date to program day: 5 Nov → 1, 25 Nov → 21
+        const dIndex = Number(day) - 4; // 1..21
+        if (dIndex < 1 || dIndex > 21) return fallbackLines;
+        const meditationIndex = ({ 3: 1, 8: 2, 15: 3 })[dIndex];
+        if (meditationIndex) return ['Скульптор.', `Медитация ${meditationIndex}`];
+        const medBefore = medDays.filter(x => x < dIndex).length;
+        const trainingIdx = Math.max(1, Math.min(18, dIndex - medBefore));
+        return ['Скульптор.', `Тренировка ${trainingIdx}`];
       }
 
-      // training index across October excluding meditation days (3,8,15)
-      const medDays = [3, 8, 15];
-      const medBefore = medDays.filter(x => x < d).length;
-      const trainingIdx = Math.max(1, Math.min(18, d - medBefore));
-      return ['Скульптор.', `Тренировка ${trainingIdx}`];
+      if (month === 10) {
+        const d = Number(day);
+        const meditationIndex = ({ 3: 1, 8: 2, 15: 3 })[d];
+        if (meditationIndex) return ['Скульптор.', `Медитация ${meditationIndex}`];
+        const medBefore = medDays.filter(x => x < d).length;
+        const trainingIdx = Math.max(1, Math.min(18, d - medBefore));
+        return ['Скульптор.', `Тренировка ${trainingIdx}`];
+      }
+
+      return fallbackLines;
     } catch (_) {
       return fallbackLines;
     }
@@ -280,11 +295,12 @@
   function computeTrainingLinkFromMoscowDate(fallbackHref){
     try {
       const { month, day } = getMoscowDateParts();
-      if (month === 10) {
+      if (month === 11) {
+        const idx = Number(day) - 4; // 1..21
+        if (idx >= 1 && idx <= 21) return `https://t.me/sculptor_v1_bot?start=${idx}day`;
+      } else if (month === 10) {
         const d = Number(day);
-        if (d >= 1 && d <= 21) {
-          return `https://t.me/sculptor_v1_bot?start=${d}day`;
-        }
+        if (d >= 1 && d <= 21) return `https://t.me/sculptor_v1_bot?start=${d}day`;
       }
       return fallbackHref;
     } catch (_) {
@@ -1623,13 +1639,8 @@
           if (refreshing) return;
           refreshing = true;
           try {
-            const statuses = await fetchStatueUsersStatuses(telegramWebApp);
-            if (Array.isArray(statuses)) {
-              applyStatueStatuses(statuses);
-            } else if (typeof statuses === 'boolean') {
-              const cards = Array.from(screen.querySelectorAll('.task-card'));
-              applyStatueStatuses(new Array(cards.length).fill(statuses));
-            }
+            // Force-close all tasks as completed
+            applyStatueStatuses(true);
           } catch (_) {
           } finally {
             refreshing = false;
