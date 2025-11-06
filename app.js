@@ -1620,6 +1620,7 @@
               const ok = toBool(list[i]);
               const img = card.querySelector('.task-card__img');
               if (img) img.classList.toggle('is-dimmed', !ok);
+              if (img) img.style.opacity = '0.5';
 
               // If task is completed → hide the "пройти" button and lock
               if (ok) {
