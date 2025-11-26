@@ -1031,7 +1031,15 @@ body:has(#gift-sheet:not([hidden]), #task-info-sheet:not([hidden])) .bottom-nav 
   position: relative; 
   z-index: 2; 
   text-align: center; 
-  margin: 0 0 16px; 
+  margin: 0 0 20px;
+  /* Make it bigger and more impactful */
+  font-size: clamp(24px, 6vw, 36px); 
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: #000;
+  /* Add a subtle underline/decoration if needed, but for now just typography */
+  text-transform: uppercase; 
 }
 .task-info-card__desc { 
   position: relative; 
@@ -1058,7 +1066,19 @@ body:has(#gift-sheet:not([hidden]), #task-info-sheet:not([hidden])) .bottom-nav 
   padding-left: 4px;
 }
 /* helper note below the task CTA */
-.task-info-card__note { margin: 12px 0 0; color: #000; opacity: .9; font-size: clamp(14px, 3.6vw, 18px); text-align: center; width: 100%; }
+.task-info-card__note { 
+  margin: 16px 0 0; 
+  color: #000; 
+  opacity: 1; 
+  font-size: clamp(14px, 3.6vw, 16px); 
+  text-align: left; 
+  width: 100%;
+  background: rgba(235, 59, 64, 0.08); /* Light tint of the accent color */
+  padding: 12px 14px;
+  border-radius: 8px;
+  border-left: 3px solid #eb3b40;
+  line-height: 1.35;
+}
 /* close button in the corner */
 .task-info-close { position: absolute; right: 12px; top: 12px; border: 0; background: none; color: #eb3b40; font-size: clamp(28px, 8vw, 36px); line-height: 1; padding: 6px; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; z-index: 3; }
 .task-info-close:focus, .task-info-close:focus-visible { outline: none; }
