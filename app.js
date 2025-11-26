@@ -1753,7 +1753,7 @@
         function openSheetFor(index){
           const item = TASKS[index] || TASKS[0];
           if (titleSpan) titleSpan.textContent = item.title;
-          if (descEl) descEl.textContent = item.desc;
+          if (descEl) descEl.innerHTML = item.desc;
           sheet.hidden = false;
           // Update CTA destination depending on selected task
           try {

@@ -1019,18 +1019,46 @@ body:has(#gift-sheet:not([hidden]), #task-info-sheet:not([hidden])) .bottom-nav 
   position: relative;
   overflow: hidden;
   min-height: clamp(200px, 36vh, 420px);
-  display: grid;
-  grid-auto-rows: max-content;
-  align-content: center;
-  justify-items: center;
-  gap: 12px;
-  /* uniform padding; only reserve space on top so the close button doesn't overlap */
-  padding: calc(32px + 44px + 6px) 18px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  /* Adjust padding to be safe for iPhone home indicator and give more space */
+  padding: 32px 18px calc(24px + env(safe-area-inset-bottom));
   text-align: center;
 }
-.task-info-card__title, .task-info-card__desc { position: relative; z-index: 2; text-align: center; margin: 0; }
+.task-info-card__title { 
+  position: relative; 
+  z-index: 2; 
+  text-align: center; 
+  margin: 0 0 16px; 
+}
+.task-info-card__desc { 
+  position: relative; 
+  z-index: 2; 
+  text-align: left; 
+  margin: 0; 
+  width: 100%;
+}
+.task-info-card__desc p {
+  margin: 0 0 12px;
+  line-height: 1.4;
+}
+.task-info-card__desc p:last-child {
+  margin-bottom: 0;
+}
+.task-info-card__desc ul {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+.task-info-card__desc li {
+  margin-bottom: 6px;
+  line-height: 1.35;
+  padding-left: 4px;
+}
 /* helper note below the task CTA */
-.task-info-card__note { margin: 8px 0 14px; color: #000; opacity: .9; font-size: clamp(14px, 3.6vw, 18px); text-align: center; }
+.task-info-card__note { margin: 12px 0 0; color: #000; opacity: .9; font-size: clamp(14px, 3.6vw, 18px); text-align: center; width: 100%; }
 /* close button in the corner */
 .task-info-close { position: absolute; right: 12px; top: 12px; border: 0; background: none; color: #eb3b40; font-size: clamp(28px, 8vw, 36px); line-height: 1; padding: 6px; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; z-index: 3; }
 .task-info-close:focus, .task-info-close:focus-visible { outline: none; }
