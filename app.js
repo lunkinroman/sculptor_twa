@@ -1604,9 +1604,9 @@
           const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
           cards.forEach((card, idx) => {
             const btn = card.querySelector('.task-card__go');
-            if (btn) btn.hidden = !(idx === 1 || idx === 2 || idx === 3 || idx === 4);
+            if (btn) btn.hidden = !(idx === 1 || idx === 2 || idx === 3);
             const lock = card.querySelector('.task-card__lock');
-            if (lock && (idx === 1 || idx === 2 || idx === 3 || idx === 4)) lock.hidden = true;
+            if (lock && (idx === 1 || idx === 2 || idx === 3)) lock.hidden = true;
           });
         } catch (_) {}
 
@@ -1633,7 +1633,7 @@
                 if (lock) lock.hidden = true;
               } else {
                 // If not completed, show button for target tasks and keep unlocked
-                if (i === 1 || i === 2 || i === 3 || i === 4) {
+                if (i === 1 || i === 2 || i === 3) {
                    if (btn) btn.hidden = false;
                    if (lock) lock.hidden = true;
                 }
