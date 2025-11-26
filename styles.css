@@ -1018,72 +1018,99 @@ body:has(#gift-sheet:not([hidden]), #task-info-sheet:not([hidden])) .bottom-nav 
 .task-info-card {
   position: relative;
   overflow: hidden;
-  min-height: clamp(200px, 36vh, 420px);
+  min-height: auto; /* Let content dictate height, but keep minimums via padding/gap if needed */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0;
-  /* Adjust padding to be safe for iPhone home indicator and give more space */
-  /* Added more top padding (60px) to prevent title overlapping with close button */
-  padding: 60px 18px calc(24px + env(safe-area-inset-bottom));
-  text-align: center;
+  align-items: stretch; /* Full width children */
+  gap: 20px; /* Consistent vertical spacing */
+  /* Balanced padding: top enough for close button, bottom for safety */
+  padding: 44px 24px calc(24px + env(safe-area-inset-bottom));
+  text-align: left;
 }
+
 .task-info-card__title { 
   position: relative; 
   z-index: 2; 
-  text-align: center; 
-  margin: 0 0 20px;
-  /* Make it bigger and more impactful */
-  font-size: clamp(24px, 6vw, 36px); 
+  text-align: left; 
+  margin: 0;
+  padding-right: 40px; /* Prevent overlap with close button */
+  font-size: clamp(22px, 5.6vw, 32px); 
   font-weight: 500;
   letter-spacing: -0.02em;
-  line-height: 1.1;
+  line-height: 1.15;
   color: #000;
-  /* Add a subtle underline/decoration if needed, but for now just typography */
-  text-transform: uppercase; 
+  text-transform: none; /* Easier to read */
 }
+
 .task-info-card__desc { 
   position: relative; 
   z-index: 2; 
   text-align: left; 
   margin: 0; 
   width: 100%;
+  color: rgba(0,0,0,0.85);
+  font-size: 17px;
+  line-height: 1.5;
 }
+
 .task-info-card__desc p {
   margin: 0 0 12px;
-  line-height: 1.4;
 }
 .task-info-card__desc p:last-child {
   margin-bottom: 0;
 }
 .task-info-card__desc ul {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   padding-left: 20px;
   list-style-type: disc;
 }
 .task-info-card__desc li {
-  margin-bottom: 6px;
-  line-height: 1.35;
-  padding-left: 4px;
+  margin-bottom: 4px;
+  padding-left: 0;
 }
+
 /* helper note below the task CTA */
 .task-info-card__note { 
-  /* Increased top margin to separate it from the button */
-  margin: 24px 0 0; 
+  margin: 0; 
   color: #000; 
-  opacity: 1; 
-  font-size: clamp(14px, 3.6vw, 16px); 
+  font-size: 15px; 
   text-align: left; 
   width: 100%;
-  background: rgba(235, 59, 64, 0.08); /* Light tint of the accent color */
-  padding: 12px 14px;
-  border-radius: 8px;
-  border-left: 3px solid #eb3b40;
-  line-height: 1.35;
+  background: rgba(235, 59, 64, 0.06); 
+  padding: 14px 16px;
+  border-radius: 12px;
+  line-height: 1.4;
+  /* Removed border-left for a cleaner, more contained look */
 }
-/* close button in the corner */
-.task-info-close { position: absolute; right: 12px; top: 12px; border: 0; background: none; color: #eb3b40; font-size: clamp(28px, 8vw, 36px); line-height: 1; padding: 6px; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; z-index: 3; }
+
+/* Update close button position */
+.task-info-close { 
+  position: absolute; 
+  right: 16px; 
+  top: 16px; 
+  border: 0; 
+  background: rgba(0,0,0,0.05); /* Subtle background circle */
+  border-radius: 50%;
+  color: #000; 
+  font-size: 20px; 
+  line-height: 1; 
+  padding: 0; 
+  width: 32px; 
+  height: 32px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 3; 
+  transition: background .2s;
+}
+.task-info-close:active { background: rgba(0,0,0,0.1); }
 .task-info-close:focus, .task-info-close:focus-visible { outline: none; }
+
+/* Ensure the button is properly spaced */
+.task-info-card .gift-card__btn {
+  margin-top: 8px; /* Extra space before button */
+  flex-shrink: 0;
+}
 
 /* ---- Tasks screen ---- */
 .tasks-page .page-title { color: #000; font-size: clamp(40px, 9vw, 104.49px); letter-spacing: -0.02em; line-height: 1.02; font-weight: 500; margin: 0 0 6px; }
