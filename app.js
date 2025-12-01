@@ -1604,9 +1604,9 @@
           const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
           cards.forEach((card, idx) => {
             const btn = card.querySelector('.task-card__go');
-            if (btn) btn.hidden = !(idx === 1 || idx === 2 || idx === 3);
+            if (btn) btn.hidden = !(idx === 1 || idx === 2 || idx === 3 || idx === 4);
             const lock = card.querySelector('.task-card__lock');
-            if (lock && (idx === 1 || idx === 2 || idx === 3)) lock.hidden = true;
+            if (lock && (idx === 1 || idx === 2 || idx === 3 || idx === 4)) lock.hidden = true;
           });
         } catch (_) {}
 
@@ -1632,11 +1632,11 @@
                 if (btn) btn.hidden = true;
                 if (lock) lock.hidden = true;
               } else {
-                // If not completed, show button for target tasks and keep unlocked
-                if (i === 1 || i === 2 || i === 3) {
-                   if (btn) btn.hidden = false;
-                   if (lock) lock.hidden = true;
-                }
+              // If not completed, show button for target tasks and keep unlocked
+              if (i === 1 || i === 2 || i === 3 || i === 4) {
+                 if (btn) btn.hidden = false;
+                 if (lock) lock.hidden = true;
+              }
               }
             });
           } catch (_) {}
@@ -1647,38 +1647,10 @@
           if (refreshing) return;
           refreshing = true;
           try {
-            // Check real statuses from backend or local storage
-            // For now, let's assume we fetch them. If not implemented, default to false for testing the logic
-            // But previous code was force-closing all tasks as completed: applyStatueStatuses(true);
-            // We need to stop forcing true.
-            
-            // Let's try to fetch from API or mock false for now to see buttons
-             try {
-                // If you have a backend endpoint, call it here. 
-                // collecting statuses...
-                // For this specific request where the user says "tasks are not completed", we should probably default to false 
-                // unless we have real data.
-                // The previous code had: applyStatueStatuses(true); which forces completion.
-                
-                // If we want to check real status, we need a way to get it. 
-                // Since I don't see the backend call here, I will switch it to use 'false' for indices 1,2,3,4 to match the requirement 
-                // "If task is NOT completed...". 
-                
-                // Assuming default state is incomplete for these specific tasks for now:
-                 const mockStatuses = [false, false, false, false, false, false]; // Adjust size as needed
-                 // Or better, keep existing logic but don't force true?
-                 
-                 // If the user wants to see them as "not completed", we must pass false (or an array of falses).
-                 // The original code was: applyStatueStatuses(true);
-                 // I will change it to not force true.
-                 
-                 // However, we probably want to keep other tasks working.
-                 // Let's assume all are incomplete for testing if no backend logic exists.
-                 applyStatueStatuses([false, false, false, false, false]); 
-             } catch (e) {
-                 applyStatueStatuses(false);
-             }
+            const statuses = await fetchStatueUsersStatuses(telegramWebApp);
+            applyStatueStatuses(statuses);
           } catch (_) {
+            applyStatueStatuses(false);
           } finally {
             refreshing = false;
           }
