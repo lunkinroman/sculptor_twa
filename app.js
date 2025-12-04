@@ -58,23 +58,7 @@
     if (!buyButton) return;
 
     buyButton.addEventListener('click', () => {
-      const payload = {
-        action: 'purchase_training',
-        timestamp: Date.now(),
-        source: 'no_access_screen'
-      };
-
-      if (tg) {
-        // Use Telegram's Main Button for purchase flow
-        tg.MainButton.setText('Перейти к оплате');
-        tg.onEvent('mainButtonClicked', () => {
-          tg.sendData(JSON.stringify({ ...payload, confirmed: true }));
-        });
-      } else {
-        // Browser fallback - could redirect to payment page
-        alert('В браузере: ' + JSON.stringify(payload));
-        console.log('Purchase button clicked:', payload);
-      }
+      openTelegramLink('https://t.me/plbvru_bot?start=start');
     });
   }
 
@@ -92,12 +76,7 @@
     tg.MainButton.setText('Купить тренировку');
 
     tg.onEvent('mainButtonClicked', () => {
-      const payload = {
-        action: 'purchase_training',
-        timestamp: Date.now(),
-        source: 'main_button'
-      };
-      tg.sendData(JSON.stringify(payload));
+      openTelegramLink('https://t.me/plbvru_bot?start=start');
     });
 
     tg.onEvent('themeChanged', () => {
@@ -249,13 +228,16 @@
       if (month === 11) {
         // 5 ноября → 1 день, 25 ноября → 21 день
         const idx = Number(day) - 4;
-        return Math.max(1, Math.min(21, idx));
+        if (idx >= 1 && idx <= 21) return idx;
+        return 1;
       }
       if (month === 10) {
         // 1 октября → 1 день, 2 октября → 2 день ... максимум 30
-        return Math.max(1, Math.min(30, Number(day)));
+        const d = Number(day);
+        if (d >= 1 && d <= 30) return d;
+        return 1;
       }
-      return safeFallback;
+      return 1;
     } catch (_) {
       return safeFallback;
     }
@@ -269,24 +251,25 @@
       if (month === 11) {
         // Map calendar date to program day: 5 Nov → 1, 25 Nov → 21
         const dIndex = Number(day) - 4; // 1..21
-        if (dIndex < 1 || dIndex > 21) return fallbackLines;
-        const meditationIndex = ({ 3: 1, 8: 2, 15: 3 })[dIndex];
-        if (meditationIndex) return ['Скульптор.', `Медитация ${meditationIndex}`];
-        const medBefore = medDays.filter(x => x < dIndex).length;
-        const trainingIdx = Math.max(1, Math.min(18, dIndex - medBefore));
-        return ['Скульптор.', `Тренировка ${trainingIdx}`];
-      }
-
-      if (month === 10) {
+        if (dIndex >= 1 && dIndex <= 21) {
+          const meditationIndex = ({ 3: 1, 8: 2, 15: 3 })[dIndex];
+          if (meditationIndex) return ['Скульптор.', `Медитация ${meditationIndex}`];
+          const medBefore = medDays.filter(x => x < dIndex).length;
+          const trainingIdx = Math.max(1, Math.min(18, dIndex - medBefore));
+          return ['Скульптор.', `Тренировка ${trainingIdx}`];
+        }
+      } else if (month === 10) {
         const d = Number(day);
-        const meditationIndex = ({ 3: 1, 8: 2, 15: 3 })[d];
-        if (meditationIndex) return ['Скульптор.', `Медитация ${meditationIndex}`];
-        const medBefore = medDays.filter(x => x < d).length;
-        const trainingIdx = Math.max(1, Math.min(18, d - medBefore));
-        return ['Скульптор.', `Тренировка ${trainingIdx}`];
+        if (d >= 1 && d <= 30) {
+          const meditationIndex = ({ 3: 1, 8: 2, 15: 3 })[d];
+          if (meditationIndex) return ['Скульптор.', `Медитация ${meditationIndex}`];
+          const medBefore = medDays.filter(x => x < d).length;
+          const trainingIdx = Math.max(1, Math.min(18, d - medBefore));
+          return ['Скульптор.', `Тренировка ${trainingIdx}`];
+        }
       }
 
-      return fallbackLines;
+      return ['Скульптор.', 'Тренировка 1'];
     } catch (_) {
       return fallbackLines;
     }
@@ -302,7 +285,7 @@
         const d = Number(day);
         if (d >= 1 && d <= 21) return `https://t.me/sculptor_v1_bot?start=${d}day`;
       }
-      return fallbackHref;
+      return `https://t.me/sculptor_v1_bot?start=1day`;
     } catch (_) {
       return fallbackHref;
     }
