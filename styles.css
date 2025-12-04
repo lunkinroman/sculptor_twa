@@ -37,7 +37,7 @@ html, body {
   margin: 0;
   padding: 0;
   background-color: #f2f2f2; /* light base for main menu */
-  overflow-x: hidden; /* prevent any horizontal scroll that might reveal gutters */
+  overflow: hidden; /* prevent body scroll, use .page scrolling */
   font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -209,9 +209,9 @@ html, body {
 
 /* ---- Main menu (Calendar) ---- */
 .page {
-  min-height: 100vh;
-  min-height: 100dvh;
-  min-height: var(--app-height);
+  height: 100vh;
+  height: 100dvh;
+  height: var(--app-height);
   background-color: #f2f2f2;
   background-image: url('./assets/images/bg-calendar.png');
   background-repeat: no-repeat;
@@ -985,7 +985,7 @@ html, body {
   height: auto;
   display: none; /* shown after Pixi is ready */
 }
-.sculptor-figure__stage canvas { width: 100% !important; height: auto !important; display: block; }
+.sculptor-figure__stage canvas { width: 100% !important; height: auto !important; display: block; touch-action: pan-y; }
 
 /* ---- Gift bottom sheet ---- */
 .gift-sheet {
