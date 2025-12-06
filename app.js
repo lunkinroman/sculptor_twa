@@ -1581,15 +1581,16 @@
         function hideLocks(indices){ setVisibility('.task-card__lock', false, indices); }
         function showLocks(indices){ setVisibility('.task-card__lock', true, indices); }
 
-        // Show buttons for: 2) Фото/видео ... , 3) Отзыв в формате кружок, 4) Видео "Мой день"
-        // Remove locks for: 3) и 4) как просили
+        // Initial state: all locked (unavailable)
         try {
           const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
-          cards.forEach((card, idx) => {
+          cards.forEach((card) => {
             const btn = card.querySelector('.task-card__go');
-            if (btn) btn.hidden = !(idx === 1 || idx === 2 || idx === 3 || idx === 4);
+            if (btn) btn.hidden = true;
             const lock = card.querySelector('.task-card__lock');
-            if (lock && (idx === 1 || idx === 2 || idx === 3 || idx === 4)) lock.hidden = true;
+            if (lock) lock.hidden = false;
+            const img = card.querySelector('.task-card__img');
+            if (img) img.style.opacity = '0.5';
           });
         } catch (_) {}
 
@@ -1597,30 +1598,17 @@
         function applyStatueStatuses(statuses){
           try {
             const cards = Array.from(screen.querySelectorAll('.task-card'));
-            const toBool = (v) => v === true;
-            const list = Array.isArray(statuses) ? statuses : cards.map(() => (typeof statuses === 'boolean' ? statuses : true));
-            cards.forEach((card, i) => {
-              const ok = toBool(list[i]);
+            // Force locked state for all tasks
+            cards.forEach((card) => {
               const img = card.querySelector('.task-card__img');
-              if (img) img.classList.toggle('is-dimmed', !ok);
-              if (img) img.style.opacity = ok ? '1' : '0.5';
+              if (img) img.classList.add('is-dimmed');
+              if (img) img.style.opacity = '0.5';
 
               const btn = card.querySelector('.task-card__go');
               const lock = card.querySelector('.task-card__lock');
 
-              // If task is completed → hide the "пройти" button and lock
-              if (ok) {
-                // Ensure full opacity by removing parent lock state
-                card.classList.remove('is-locked');
-                if (btn) btn.hidden = true;
-                if (lock) lock.hidden = true;
-              } else {
-              // If not completed, show button for target tasks and keep unlocked
-              if (i === 1 || i === 2 || i === 3 || i === 4) {
-                 if (btn) btn.hidden = false;
-                 if (lock) lock.hidden = true;
-              }
-              }
+              if (btn) btn.hidden = true;
+              if (lock) lock.hidden = false;
             });
           } catch (_) {}
         }
