@@ -124,8 +124,8 @@
       if (!btn) return;
       const p = String(productName || '').toLowerCase();
       let url = '';
-      if (p === 'fat-burn') url = 'https://t.me/+e8-pZ-WgfiI1N2Yy';
-      else if (p === 'postartum' || p === 'postpartum') url = 'https://t.me/+SA8HSVDe7a4zOTZi';
+      if (p === 'fat-burn') url = 'https://t.me/+19sVO0DK_CI4ZDMy';
+      else if (p === 'postartum' || p === 'postpartum') url = 'https://t.me/+5v5P5rovTW00MWFi';
       if (!url) return;
       btn.setAttribute('href', url);
       btn.removeAttribute('target');
