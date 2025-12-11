@@ -148,7 +148,7 @@
 
   function getDefaultAdminConfig(){
     return {
-      today: { day: 8 },
+      today: { day: 1 },
       training: {
         image: './assets/images/train-example.png',
         titleLines: ['Скульптор.', 'Тренировка 8'],
@@ -225,9 +225,9 @@
     const safeFallback = Number(fallbackDay) > 0 ? Math.floor(Number(fallbackDay)) : 1;
     try {
       const { month, day } = getMoscowDateParts();
-      if (month === 11) {
-        // 5 ноября → 1 день, 25 ноября → 21 день
-        const idx = Number(day) - 4;
+      if (month === 12) {
+        // 10 декабря → 1 день, 30 декабря → 21 день
+        const idx = Number(day) - 9;
         if (idx >= 1 && idx <= 21) return idx;
         return 1;
       }
