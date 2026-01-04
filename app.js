@@ -1581,37 +1581,73 @@
         function hideLocks(indices){ setVisibility('.task-card__lock', false, indices); }
         function showLocks(indices){ setVisibility('.task-card__lock', true, indices); }
 
-        // Initial state: all locked (unavailable)
-        try {
-          const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
-          cards.forEach((card) => {
-            const btn = card.querySelector('.task-card__go');
-            if (btn) btn.hidden = true;
-            const lock = card.querySelector('.task-card__lock');
-            if (lock) lock.hidden = false;
+        // Tasks UI state machine:
+        // 1) locked: lock visible, button hidden, statue opacity 0.5
+        // 2.1) available + incomplete (false): no lock, button visible, statue opacity 0.5
+        // 2.2) available + completed (true): no lock, no button, statue opacity 1
+        const ALWAYS_LOCKED_INDICES = [4]; // "Фото до/после" stays locked for now
+
+        function setTaskState(card, state){
+          try {
+            if (!card) return;
             const img = card.querySelector('.task-card__img');
-            if (img) img.style.opacity = '0.5';
-          });
-        } catch (_) {}
+            const btn = card.querySelector('.task-card__go');
+            const lock = card.querySelector('.task-card__lock');
+
+            const locked = !!(state && state.locked);
+            const completed = !!(state && state.completed);
+
+            if (locked) {
+              if (btn) btn.hidden = true;
+              if (lock) lock.hidden = false;
+              if (img) img.style.opacity = '0.5';
+              return;
+            }
+
+            // available: no lock
+            if (lock) lock.hidden = true;
+
+            if (completed) {
+              if (btn) btn.hidden = true;
+              if (img) img.style.opacity = '1';
+            } else {
+              if (btn) btn.hidden = false;
+              if (img) img.style.opacity = '0.5';
+            }
+          } catch (_) {}
+        }
+
+        // Initial state:
+        // - tasks 0..3 are available+incomplete by default (until backend resolves)
+        // - task 4 (Фото до/после) is locked
+        function applyDefaultTasksState(){
+          try {
+            const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
+            cards.forEach((card, idx) => {
+              if (ALWAYS_LOCKED_INDICES.includes(idx)) setTaskState(card, { locked: true });
+              else setTaskState(card, { locked: false, completed: false });
+            });
+          } catch (_) {}
+        }
 
         // Apply statuses returned from backend (T/F per task-card in DOM order)
         function applyStatueStatuses(statuses){
           try {
-            const cards = Array.from(screen.querySelectorAll('.task-card'));
-            // Force locked state for all tasks
-            cards.forEach((card) => {
-              const img = card.querySelector('.task-card__img');
-              if (img) img.classList.add('is-dimmed');
-              if (img) img.style.opacity = '0.5';
-
-              const btn = card.querySelector('.task-card__go');
-              const lock = card.querySelector('.task-card__lock');
-
-              if (btn) btn.hidden = true;
-              if (lock) lock.hidden = false;
+            const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
+            const arr = Array.isArray(statuses) ? statuses : null;
+            cards.forEach((card, idx) => {
+              if (ALWAYS_LOCKED_INDICES.includes(idx)) {
+                setTaskState(card, { locked: true });
+                return;
+              }
+              const v = arr && typeof arr[idx] === 'boolean' ? arr[idx] : false;
+              setTaskState(card, { locked: false, completed: v === true });
             });
           } catch (_) {}
         }
+
+        // Set defaults immediately
+        applyDefaultTasksState();
 
         let refreshing = false;
         async function refreshTasksFromBackend(){
@@ -1621,7 +1657,7 @@
             const statuses = await fetchStatueUsersStatuses(telegramWebApp);
             applyStatueStatuses(statuses);
           } catch (_) {
-            applyStatueStatuses(false);
+            applyStatueStatuses(null);
           } finally {
             refreshing = false;
           }
