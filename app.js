@@ -1586,8 +1586,9 @@
         // 2.1) available + incomplete (false): no lock, button visible, statue opacity 0.5
         // 2.2) available + completed (true): no lock, no button, statue opacity 1
         const ALWAYS_LOCKED_INDICES = [4]; // "Фото до/после" stays locked for now
+        const ALWAYS_HIDE_BUTTON_INDICES = [0]; // "Пройти 18 тренировок" — no CTA button (exception)
 
-        function setTaskState(card, state){
+        function setTaskState(card, state, idx){
           try {
             if (!card) return;
             const img = card.querySelector('.task-card__img');
@@ -1614,6 +1615,11 @@
               if (btn) btn.hidden = false;
               if (img) img.style.opacity = '0.5';
             }
+
+            // Per-task exception: hide CTA regardless of state
+            if (typeof idx === 'number' && ALWAYS_HIDE_BUTTON_INDICES.includes(idx)) {
+              if (btn) btn.hidden = true;
+            }
           } catch (_) {}
         }
 
@@ -1624,8 +1630,8 @@
           try {
             const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
             cards.forEach((card, idx) => {
-              if (ALWAYS_LOCKED_INDICES.includes(idx)) setTaskState(card, { locked: true });
-              else setTaskState(card, { locked: false, completed: false });
+              if (ALWAYS_LOCKED_INDICES.includes(idx)) setTaskState(card, { locked: true }, idx);
+              else setTaskState(card, { locked: false, completed: false }, idx);
             });
           } catch (_) {}
         }
@@ -1637,11 +1643,11 @@
             const arr = Array.isArray(statuses) ? statuses : null;
             cards.forEach((card, idx) => {
               if (ALWAYS_LOCKED_INDICES.includes(idx)) {
-                setTaskState(card, { locked: true });
+                setTaskState(card, { locked: true }, idx);
                 return;
               }
               const v = arr && typeof arr[idx] === 'boolean' ? arr[idx] : false;
-              setTaskState(card, { locked: false, completed: v === true });
+              setTaskState(card, { locked: false, completed: v === true }, idx);
             });
           } catch (_) {}
         }
