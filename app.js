@@ -1585,7 +1585,7 @@
         // 1) locked: lock visible, button hidden, statue opacity 0.5
         // 2.1) available + incomplete (false): no lock, button visible, statue opacity 0.5
         // 2.2) available + completed (true): no lock, no button, statue opacity 1
-        const ALWAYS_LOCKED_INDICES = [4]; // "Фото до/после" stays locked for now
+        const ALWAYS_LOCKED_INDICES = []; // no forced locked tasks
         const ALWAYS_HIDE_BUTTON_INDICES = [0]; // "Пройти 18 тренировок" — no CTA button (exception)
 
         function setTaskState(card, state, idx){
@@ -1624,8 +1624,7 @@
         }
 
         // Initial state:
-        // - tasks 0..3 are available+incomplete by default (until backend resolves)
-        // - task 4 (Фото до/после) is locked
+        // - tasks are available+incomplete by default (until backend resolves)
         function applyDefaultTasksState(){
           try {
             const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
