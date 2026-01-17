@@ -124,8 +124,8 @@
       if (!btn) return;
       const p = String(productName || '').toLowerCase();
       let url = '';
-      if (p === 'fat-burn') url = 'https://t.me/+19sVO0DK_CI4ZDMy';
-      else if (p === 'postartum' || p === 'postpartum') url = 'https://t.me/+5v5P5rovTW00MWFi';
+      if (p === 'fat-burn') url = 'https://t.me/+TCNKMny-wW8zMDIy';
+      else if (p === 'postartum' || p === 'postpartum') url = 'https://t.me/+DFRnQc-08H5kMmIy';
       if (!url) return;
       btn.setAttribute('href', url);
       btn.removeAttribute('target');
@@ -156,7 +156,7 @@
         href: '#'
       },
       news: [
-        { image: './assets/images/train-example.png', date: '21 октября', title: 'Предзапись на СКУЛЬПТОР 2.0 уже открыта.', href: 'https://t.me/plbvru_bot?start=start' }
+        // { image: './assets/images/train-example.png', date: '21 октября', title: 'Предзапись на СКУЛЬПТОР 2.0 уже открыта.', href: 'https://t.me/plbvru_bot?start=start' }
       ]
     };
   }
@@ -224,18 +224,16 @@
   function computeTodayDayFromMoscowDate(fallbackDay){
     const safeFallback = Number(fallbackDay) > 0 ? Math.floor(Number(fallbackDay)) : 1;
     try {
-      const { month, day } = getMoscowDateParts();
-      if (month === 12) {
-        // 10 декабря → 1 день, 30 декабря → 21 день
-        const idx = Number(day) - 9;
-        if (idx >= 1 && idx <= 21) return idx;
-        return 1;
-      }
-      if (month === 10) {
-        // 1 октября → 1 день, 2 октября → 2 день ... максимум 30
-        const d = Number(day);
-        if (d >= 1 && d <= 30) return d;
-        return 1;
+      const { year, month, day } = getMoscowDateParts();
+      if (year === 2026) {
+        if (month === 1 && day >= 14) {
+          // 14 января → 1 день, 31 января → 18 день
+          return day - 13;
+        }
+        if (month === 2 && day <= 3) {
+          // 1 февраля → 19 день, 3 февраля → 21 день
+          return day + 18;
+        }
       }
       return 1;
     } catch (_) {
@@ -245,28 +243,24 @@
 
   function computeTrainingTitleLinesFromMoscowDate(fallbackLines){
     try {
-      const { month, day } = getMoscowDateParts();
+      const { year, month, day } = getMoscowDateParts();
       const medDays = [3, 8, 15];
+      let dIndex = -1;
 
-      if (month === 11) {
-        // Map calendar date to program day: 5 Nov → 1, 25 Nov → 21
-        const dIndex = Number(day) - 4; // 1..21
-        if (dIndex >= 1 && dIndex <= 21) {
-          const meditationIndex = ({ 3: 1, 8: 2, 15: 3 })[dIndex];
-          if (meditationIndex) return ['Скульптор.', `Медитация ${meditationIndex}`];
-          const medBefore = medDays.filter(x => x < dIndex).length;
-          const trainingIdx = Math.max(1, Math.min(18, dIndex - medBefore));
-          return ['Скульптор.', `Тренировка ${trainingIdx}`];
+      if (year === 2026) {
+        if (month === 1 && day >= 14) {
+          dIndex = day - 13;
+        } else if (month === 2 && day <= 3) {
+          dIndex = day + 18;
         }
-      } else if (month === 10) {
-        const d = Number(day);
-        if (d >= 1 && d <= 30) {
-          const meditationIndex = ({ 3: 1, 8: 2, 15: 3 })[d];
-          if (meditationIndex) return ['Скульптор.', `Медитация ${meditationIndex}`];
-          const medBefore = medDays.filter(x => x < d).length;
-          const trainingIdx = Math.max(1, Math.min(18, d - medBefore));
-          return ['Скульптор.', `Тренировка ${trainingIdx}`];
-        }
+      }
+
+      if (dIndex >= 1 && dIndex <= 21) {
+        const meditationIndex = ({ 3: 1, 8: 2, 15: 3 })[dIndex];
+        if (meditationIndex) return ['Скульптор.', `Медитация ${meditationIndex}`];
+        const medBefore = medDays.filter(x => x < dIndex).length;
+        const trainingIdx = Math.max(1, Math.min(18, dIndex - medBefore));
+        return ['Скульптор.', `Тренировка ${trainingIdx}`];
       }
 
       return ['Скульптор.', 'Тренировка 1'];
@@ -277,14 +271,16 @@
 
   function computeTrainingLinkFromMoscowDate(fallbackHref){
     try {
-      const { month, day } = getMoscowDateParts();
-      if (month === 11) {
-        const idx = Number(day) - 4; // 1..21
-        if (idx >= 1 && idx <= 21) return `https://t.me/sculptor_v1_bot?start=${idx}day`;
-      } else if (month === 10) {
-        const d = Number(day);
-        if (d >= 1 && d <= 21) return `https://t.me/sculptor_v1_bot?start=${d}day`;
+      const { year, month, day } = getMoscowDateParts();
+      let idx = -1;
+      if (year === 2026) {
+        if (month === 1 && day >= 14) {
+          idx = day - 13;
+        } else if (month === 2 && day <= 3) {
+          idx = day + 18;
+        }
       }
+      if (idx >= 1 && idx <= 21) return `https://t.me/sculptor_v1_bot?start=${idx}day`;
       return `https://t.me/sculptor_v1_bot?start=1day`;
     } catch (_) {
       return fallbackHref;
