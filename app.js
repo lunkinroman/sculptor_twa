@@ -1581,7 +1581,7 @@
         // 1) locked: lock visible, button hidden, statue opacity 0.5
         // 2.1) available + incomplete (false): no lock, button visible, statue opacity 0.5
         // 2.2) available + completed (true): no lock, no button, statue opacity 1
-        const ALWAYS_LOCKED_INDICES = []; // no forced locked tasks
+        const ALWAYS_LOCKED_INDICES = [1, 2, 3, 4]; // lock tasks 2–5 on client
         const ALWAYS_HIDE_BUTTON_INDICES = [0]; // "Пройти 18 тренировок" — no CTA button (exception)
 
         function setTaskState(card, state, idx){
