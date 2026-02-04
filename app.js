@@ -1576,12 +1576,18 @@
         function showButtons(indices){ setVisibility('.task-card__go', true, indices); }
         function hideLocks(indices){ setVisibility('.task-card__lock', false, indices); }
         function showLocks(indices){ setVisibility('.task-card__lock', true, indices); }
+        function logTasks(message, details){
+          try {
+            if (details !== undefined) console.log(`[tasks] ${message}`, details);
+            else console.log(`[tasks] ${message}`);
+          } catch (_) {}
+        }
 
         // Tasks UI state machine:
         // 1) locked: lock visible, button hidden, statue opacity 0.5
         // 2.1) available + incomplete (false): no lock, button visible, statue opacity 0.5
         // 2.2) available + completed (true): no lock, no button, statue opacity 1
-        const ALWAYS_LOCKED_INDICES = [1, 2, 3, 4]; // lock tasks 2–5 on client
+        const ALWAYS_LOCKED_INDICES = [4]; // lock only "Фото до/после" (last task)
         const ALWAYS_HIDE_BUTTON_INDICES = [0]; // "Пройти 18 тренировок" — no CTA button (exception)
 
         function setTaskState(card, state, idx){
@@ -1590,14 +1596,25 @@
             const img = card.querySelector('.task-card__img');
             const btn = card.querySelector('.task-card__go');
             const lock = card.querySelector('.task-card__lock');
+            const titleEl = card.querySelector('.task-card__title');
+            const title = titleEl ? titleEl.textContent.trim() : '';
 
             const locked = !!(state && state.locked);
             const completed = !!(state && state.completed);
+            let showLock = false;
+            let showButton = false;
+            let opacity = '1';
 
             if (locked) {
+              showLock = true;
+              showButton = false;
+              opacity = '0.5';
               if (btn) btn.hidden = true;
               if (lock) lock.hidden = false;
-              if (img) img.style.opacity = '0.5';
+              if (img) img.style.opacity = opacity;
+              logTasks('Состояние задания: LOCKED', {
+                idx, title, locked, completed, showLock, showButton, opacity
+              });
               return;
             }
 
@@ -1605,17 +1622,26 @@
             if (lock) lock.hidden = true;
 
             if (completed) {
+              showLock = false;
+              showButton = false;
+              opacity = '1';
               if (btn) btn.hidden = true;
-              if (img) img.style.opacity = '1';
             } else {
+              showLock = false;
+              showButton = true;
+              opacity = '0.5';
               if (btn) btn.hidden = false;
-              if (img) img.style.opacity = '0.5';
             }
+            if (img) img.style.opacity = opacity;
 
             // Per-task exception: hide CTA regardless of state
             if (typeof idx === 'number' && ALWAYS_HIDE_BUTTON_INDICES.includes(idx)) {
+              showButton = false;
               if (btn) btn.hidden = true;
             }
+            logTasks('Состояние задания: AVAILABLE', {
+              idx, title, locked, completed, showLock, showButton, opacity
+            });
           } catch (_) {}
         }
 
@@ -1624,6 +1650,10 @@
         function applyDefaultTasksState(){
           try {
             const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
+            logTasks('Применяю дефолтные состояния', {
+              total: cards.length,
+              alwaysLockedIndices: ALWAYS_LOCKED_INDICES.slice()
+            });
             cards.forEach((card, idx) => {
               if (ALWAYS_LOCKED_INDICES.includes(idx)) setTaskState(card, { locked: true }, idx);
               else setTaskState(card, { locked: false, completed: false }, idx);
@@ -1636,6 +1666,11 @@
           try {
             const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
             const arr = Array.isArray(statuses) ? statuses : null;
+            logTasks('Применяю статусы из бэкенда', {
+              isArray: !!arr,
+              length: arr ? arr.length : 0,
+              raw: statuses
+            });
             cards.forEach((card, idx) => {
               if (ALWAYS_LOCKED_INDICES.includes(idx)) {
                 setTaskState(card, { locked: true }, idx);
@@ -1655,9 +1690,12 @@
           if (refreshing) return;
           refreshing = true;
           try {
+            logTasks('Запрашиваю статусы заданий у бэкенда');
             const statuses = await fetchStatueUsersStatuses(telegramWebApp);
+            logTasks('Статусы получены');
             applyStatueStatuses(statuses);
           } catch (_) {
+            logTasks('Ошибка получения статусов, ставлю дефолтные значения');
             applyStatueStatuses(null);
           } finally {
             refreshing = false;
