@@ -1587,7 +1587,7 @@
         // 1) locked: lock visible, button hidden, statue opacity 0.5
         // 2.1) available + incomplete (false): no lock, button visible, statue opacity 0.5
         // 2.2) available + completed (true): no lock, no button, statue opacity 1
-        const ALWAYS_LOCKED_INDICES = [4]; // lock only "Фото до/после" (last task)
+        const ALWAYS_LOCKED_INDICES = []; // no forced locks
         const ALWAYS_HIDE_BUTTON_INDICES = [0]; // "Пройти 18 тренировок" — no CTA button (exception)
 
         function setTaskState(card, state, idx){
