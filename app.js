@@ -123,10 +123,16 @@
       const btn = screen.querySelector('.link-card:nth-of-type(1) .link-card__btn');
       if (!btn) return;
       const p = String(productName || '').toLowerCase();
-      let url = '';
-      if (p === 'fat-burn') url = 'https://t.me/+TCNKMny-wW8zMDIy';
-      else if (p === 'postartum' || p === 'postpartum') url = 'https://t.me/+DFRnQc-08H5kMmIy';
+      const chatLinksByProduct = {
+        'fat-burn': 'https://t.me/+ST_c9DGlLd82NTAy',
+        fatburn: 'https://t.me/+ST_c9DGlLd82NTAy',
+        postartum: 'https://t.me/+lOiKr0yT1BkyMTAy',
+        postpartum: 'https://t.me/+lOiKr0yT1BkyMTAy'
+      };
+      const url = chatLinksByProduct[p] || '';
+      console.log('[ChatLink] Product from backend:', p || '(empty)');
       if (!url) return;
+      console.log('[ChatLink] Chat URL selected:', url);
       btn.setAttribute('href', url);
       btn.removeAttribute('target');
       btn.removeAttribute('rel');
@@ -134,6 +140,7 @@
         btn.addEventListener('click', (e) => {
           try { e.preventDefault(); } catch(_) {}
           try {
+            console.log('[ChatLink] User clicked chat button. Opening:', url);
             if (tg) { if (!openTelegramLink(url)) { window.location.assign(url); } return; }
           } catch (_) {}
           try { window.location.assign(url); } catch (_) {}
@@ -1587,7 +1594,7 @@
         // 1) locked: lock visible, button hidden, statue opacity 0.5
         // 2.1) available + incomplete (false): no lock, button visible, statue opacity 0.5
         // 2.2) available + completed (true): no lock, no button, statue opacity 1
-        const ALWAYS_LOCKED_INDICES = []; // no forced locks
+        const ALWAYS_LOCKED_INDICES = [0, 1, 2, 3, 4]; // lock all tasks
         const ALWAYS_HIDE_BUTTON_INDICES = [0]; // "Пройти 18 тренировок" — no CTA button (exception)
 
         function setTaskState(card, state, idx){
