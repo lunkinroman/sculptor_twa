@@ -210,7 +210,7 @@
     });
   }
 
-  // Resolve current date in Moscow time and compute training day for October
+  // Resolve current date in Moscow time and compute program day index
   function getMoscowDateParts(){
     try {
       const parts = new Intl.DateTimeFormat('ru-RU', {
@@ -228,68 +228,87 @@
     }
   }
 
+  const PROGRAM_START_DATE_MSK = { year: 2026, month: 2, day: 18 }; // День 1
+  const PROGRAM_DAYS_TOTAL = 21;
+
+  function getProgramDayIndexFromMoscowDate(){
+    const { year, month, day } = getMoscowDateParts();
+    const nowUtc = Date.UTC(year, month - 1, day);
+    const startUtc = Date.UTC(
+      PROGRAM_START_DATE_MSK.year,
+      PROGRAM_START_DATE_MSK.month - 1,
+      PROGRAM_START_DATE_MSK.day
+    );
+    const diffDays = Math.floor((nowUtc - startUtc) / 86400000);
+    const dayIndex = diffDays + 1;
+    const inProgramWindow = dayIndex >= 1 && dayIndex <= PROGRAM_DAYS_TOTAL;
+
+    console.log(
+      '[Schedule] Date check:',
+      `today(msk)=${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')},`,
+      `start(msk)=${PROGRAM_START_DATE_MSK.year}-${String(PROGRAM_START_DATE_MSK.month).padStart(2, '0')}-${String(PROGRAM_START_DATE_MSK.day).padStart(2, '0')},`,
+      `dayIndex=${dayIndex},`,
+      `inWindow=${inProgramWindow}`
+    );
+
+    return { dayIndex, inProgramWindow };
+  }
+
   function computeTodayDayFromMoscowDate(fallbackDay){
     const safeFallback = Number(fallbackDay) > 0 ? Math.floor(Number(fallbackDay)) : 1;
     try {
-      const { year, month, day } = getMoscowDateParts();
-      if (year === 2026) {
-        if (month === 1 && day >= 14) {
-          // 14 января → 1 день, 31 января → 18 день
-          return day - 13;
-        }
-        if (month === 2 && day <= 3) {
-          // 1 февраля → 19 день, 3 февраля → 21 день
-          return day + 18;
-        }
+      const { dayIndex, inProgramWindow } = getProgramDayIndexFromMoscowDate();
+      if (inProgramWindow) {
+        console.log('[Schedule] Today banner day:', dayIndex);
+        return dayIndex;
       }
+      console.log('[Schedule] Outside program window. Today banner fallback to day 1.');
       return 1;
     } catch (_) {
+      console.log('[Schedule] Failed to compute day by date. Using fallback day:', safeFallback);
       return safeFallback;
     }
   }
 
   function computeTrainingTitleLinesFromMoscowDate(fallbackLines){
     try {
-      const { year, month, day } = getMoscowDateParts();
       const medDays = [3, 8, 15];
-      let dIndex = -1;
+      const { dayIndex: dIndex, inProgramWindow } = getProgramDayIndexFromMoscowDate();
 
-      if (year === 2026) {
-        if (month === 1 && day >= 14) {
-          dIndex = day - 13;
-        } else if (month === 2 && day <= 3) {
-          dIndex = day + 18;
-        }
-      }
-
-      if (dIndex >= 1 && dIndex <= 21) {
+      if (inProgramWindow) {
         const meditationIndex = ({ 3: 1, 8: 2, 15: 3 })[dIndex];
-        if (meditationIndex) return ['Скульптор.', `Медитация ${meditationIndex}`];
+        if (meditationIndex) {
+          const lines = ['Скульптор.', `Медитация ${meditationIndex}`];
+          console.log('[Schedule] Training card:', lines[1], `(program day ${dIndex})`);
+          return lines;
+        }
         const medBefore = medDays.filter(x => x < dIndex).length;
         const trainingIdx = Math.max(1, Math.min(18, dIndex - medBefore));
-        return ['Скульптор.', `Тренировка ${trainingIdx}`];
+        const lines = ['Скульптор.', `Тренировка ${trainingIdx}`];
+        console.log('[Schedule] Training card:', lines[1], `(program day ${dIndex})`);
+        return lines;
       }
 
+      console.log('[Schedule] Outside program window. Training card fallback: Тренировка 1');
       return ['Скульптор.', 'Тренировка 1'];
     } catch (_) {
+      console.log('[Schedule] Failed to compute training title. Using fallback title lines.');
       return fallbackLines;
     }
   }
 
   function computeTrainingLinkFromMoscowDate(fallbackHref){
     try {
-      const { year, month, day } = getMoscowDateParts();
-      let idx = -1;
-      if (year === 2026) {
-        if (month === 1 && day >= 14) {
-          idx = day - 13;
-        } else if (month === 2 && day <= 3) {
-          idx = day + 18;
-        }
+      const { dayIndex, inProgramWindow } = getProgramDayIndexFromMoscowDate();
+      if (inProgramWindow) {
+        const url = `https://t.me/sculptor_v1_bot?start=${dayIndex}day`;
+        console.log('[Schedule] Training link selected:', url);
+        return url;
       }
-      if (idx >= 1 && idx <= 21) return `https://t.me/sculptor_v1_bot?start=${idx}day`;
+      console.log('[Schedule] Outside program window. Training link fallback to day 1.');
       return `https://t.me/sculptor_v1_bot?start=1day`;
     } catch (_) {
+      console.log('[Schedule] Failed to compute training link. Using fallback href.');
       return fallbackHref;
     }
   }
