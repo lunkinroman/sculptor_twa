@@ -1613,8 +1613,10 @@
         // 1) locked: lock visible, button hidden, statue opacity 0.5
         // 2.1) available + incomplete (false): no lock, button visible, statue opacity 0.5
         // 2.2) available + completed (true): no lock, no button, statue opacity 1
-        const ALWAYS_LOCKED_INDICES = [0, 1, 2, 3, 4]; // lock all tasks
-        const ALWAYS_HIDE_BUTTON_INDICES = [0]; // "Пройти 18 тренировок" — no CTA button (exception)
+        // Business rule: all tasks are unlocked on UI.
+        const ALWAYS_LOCKED_INDICES = [];
+        // Business rule: task #1 ("Пройти 18 тренировок") has no CTA button.
+        const ALWAYS_HIDE_BUTTON_INDICES = [0];
 
         function setTaskState(card, state, idx){
           try {
@@ -1638,8 +1640,15 @@
               if (btn) btn.hidden = true;
               if (lock) lock.hidden = false;
               if (img) img.style.opacity = opacity;
-              logTasks('Состояние задания: LOCKED', {
-                idx, title, locked, completed, showLock, showButton, opacity
+              logTasks('Задание заблокировано', {
+                idx,
+                title,
+                locked,
+                completed,
+                showLock,
+                showButton,
+                opacity,
+                reason: 'locked=true'
               });
               return;
             }
@@ -1661,12 +1670,21 @@
             if (img) img.style.opacity = opacity;
 
             // Per-task exception: hide CTA regardless of state
+            let buttonRule = completed ? 'completed=true -> скрываем кнопку' : 'completed=false -> показываем кнопку';
             if (typeof idx === 'number' && ALWAYS_HIDE_BUTTON_INDICES.includes(idx)) {
               showButton = false;
               if (btn) btn.hidden = true;
+              buttonRule = 'исключение для задания #1 -> кнопка всегда скрыта';
             }
-            logTasks('Состояние задания: AVAILABLE', {
-              idx, title, locked, completed, showLock, showButton, opacity
+            logTasks('Задание доступно', {
+              idx,
+              title,
+              locked,
+              completed,
+              showLock,
+              showButton,
+              opacity,
+              buttonRule
             });
           } catch (_) {}
         }
@@ -1678,7 +1696,8 @@
             const cards = Array.from(screen.querySelectorAll('.tasks-grid .task-card'));
             logTasks('Применяю дефолтные состояния', {
               total: cards.length,
-              alwaysLockedIndices: ALWAYS_LOCKED_INDICES.slice()
+              alwaysLockedIndices: ALWAYS_LOCKED_INDICES.slice(),
+              note: 'Все задания отображаются разблокированными'
             });
             cards.forEach((card, idx) => {
               if (ALWAYS_LOCKED_INDICES.includes(idx)) setTaskState(card, { locked: true }, idx);
@@ -1695,7 +1714,8 @@
             logTasks('Применяю статусы из бэкенда', {
               isArray: !!arr,
               length: arr ? arr.length : 0,
-              raw: statuses
+              raw: statuses,
+              note: 'Для заданий 2-5 кнопка видна только если completed=false'
             });
             cards.forEach((card, idx) => {
               if (ALWAYS_LOCKED_INDICES.includes(idx)) {
