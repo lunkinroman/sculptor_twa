@@ -1613,10 +1613,11 @@
         // 1) locked: lock visible, button hidden, statue opacity 0.5
         // 2.1) available + incomplete (false): no lock, button visible, statue opacity 0.5
         // 2.2) available + completed (true): no lock, no button, statue opacity 1
-        // Business rule: all tasks are unlocked on UI.
-        const ALWAYS_LOCKED_INDICES = [];
-        // Business rule: task #1 ("Пройти 18 тренировок") has no CTA button.
-        const ALWAYS_HIDE_BUTTON_INDICES = [0];
+        // Business rule:
+        // - task #5 ("Фото до/после") stays locked (as before)
+        // - task #1 and #5 have no CTA button
+        const ALWAYS_LOCKED_INDICES = [4];
+        const ALWAYS_HIDE_BUTTON_INDICES = [0, 4];
 
         function setTaskState(card, state, idx){
           try {
@@ -1674,7 +1675,7 @@
             if (typeof idx === 'number' && ALWAYS_HIDE_BUTTON_INDICES.includes(idx)) {
               showButton = false;
               if (btn) btn.hidden = true;
-              buttonRule = 'исключение для задания #1 -> кнопка всегда скрыта';
+              buttonRule = `исключение для задания #${idx + 1} -> кнопка всегда скрыта`;
             }
             logTasks('Задание доступно', {
               idx,
@@ -1697,7 +1698,7 @@
             logTasks('Применяю дефолтные состояния', {
               total: cards.length,
               alwaysLockedIndices: ALWAYS_LOCKED_INDICES.slice(),
-              note: 'Все задания отображаются разблокированными'
+              note: 'Задание #5 отображается в закрытом состоянии'
             });
             cards.forEach((card, idx) => {
               if (ALWAYS_LOCKED_INDICES.includes(idx)) setTaskState(card, { locked: true }, idx);
