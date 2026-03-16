@@ -1614,10 +1614,9 @@
         // 2.1) available + incomplete (false): no lock, button visible, statue opacity 0.5
         // 2.2) available + completed (true): no lock, no button, statue opacity 1
         // Business rule:
-        // - task #5 ("Фото до/после") stays locked (as before)
-        // - task #1 and #5 have no CTA button
-        const ALWAYS_LOCKED_INDICES = [4];
-        const ALWAYS_HIDE_BUTTON_INDICES = [0, 4];
+        // - task #1 has no CTA button
+        const ALWAYS_LOCKED_INDICES = [];
+        const ALWAYS_HIDE_BUTTON_INDICES = [0];
 
         function setTaskState(card, state, idx){
           try {
@@ -1698,7 +1697,7 @@
             logTasks('Применяю дефолтные состояния', {
               total: cards.length,
               alwaysLockedIndices: ALWAYS_LOCKED_INDICES.slice(),
-              note: 'Задание #5 отображается в закрытом состоянии'
+              note: 'Все задания кроме #1 доступны к выполнению'
             });
             cards.forEach((card, idx) => {
               if (ALWAYS_LOCKED_INDICES.includes(idx)) setTaskState(card, { locked: true }, idx);
