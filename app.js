@@ -124,10 +124,10 @@
       if (!btn) return;
       const p = String(productName || '').toLowerCase();
       const chatLinksByProduct = {
-        'fat-burn': 'https://t.me/+ST_c9DGlLd82NTAy',
-        fatburn: 'https://t.me/+ST_c9DGlLd82NTAy',
-        postartum: 'https://t.me/+lOiKr0yT1BkyMTAy',
-        postpartum: 'https://t.me/+lOiKr0yT1BkyMTAy'
+        'fat-burn': 'https://t.me/+5py1j4-_b603Yjgy',
+        fatburn: 'https://t.me/+5py1j4-_b603Yjgy',
+        postartum: 'https://t.me/+KqmzsJ8HZcYxMjhi',
+        postpartum: 'https://t.me/+KqmzsJ8HZcYxMjhi'
       };
       const url = chatLinksByProduct[p] || '';
       console.log('[ChatLink] Product from backend:', p || '(empty)');
@@ -228,7 +228,7 @@
     }
   }
 
-  const PROGRAM_START_DATE_MSK = { year: 2026, month: 2, day: 18 }; // День 1
+  const PROGRAM_START_DATE_MSK = { year: 2026, month: 3, day: 25 }; // День 1
   const PROGRAM_DAYS_TOTAL = 21;
 
   function getProgramDayIndexFromMoscowDate(){
@@ -301,12 +301,12 @@
     try {
       const { dayIndex, inProgramWindow } = getProgramDayIndexFromMoscowDate();
       if (inProgramWindow) {
-        const url = `https://t.me/sculptor_v1_bot?start=${dayIndex}day`;
+        const url = `https://t.me/sculptor_v6_bot?start=${dayIndex}day`;
         console.log('[Schedule] Training link selected:', url);
         return url;
       }
       console.log('[Schedule] Outside program window. Training link fallback to day 1.');
-      return `https://t.me/sculptor_v1_bot?start=1day`;
+      return `https://t.me/sculptor_v6_bot?start=1day`;
     } catch (_) {
       console.log('[Schedule] Failed to compute training link. Using fallback href.');
       return fallbackHref;
@@ -1616,7 +1616,7 @@
         // Business rule:
         // - task #1 has no CTA button
         const ALWAYS_LOCKED_INDICES = [];
-        const ALWAYS_HIDE_BUTTON_INDICES = [0];
+        const ALWAYS_HIDE_BUTTON_INDICES = [0, 1, 2, 3, 4];
 
         function setTaskState(card, state, idx){
           try {
@@ -1774,7 +1774,7 @@
         const titleSpan = sheet.querySelector('.task-info-card__title span');
         const descEl = sheet.querySelector('.task-info-card__desc');
         const closeBtn = sheet.querySelector('.task-info-close');
-        const BOT_UPLOAD_URL = 'https://t.me/sculptor_v1_bot?start=upload_with_love';
+        const BOT_UPLOAD_URL = 'https://t.me/sculptor_v6_bot?start=upload_with_love';
         function openUploadLink(){ openTelegramLink(BOT_UPLOAD_URL); }
 
         const TASKS = [
@@ -1801,9 +1801,9 @@
         ];
 
         const TASK_LINKS = {
-          2: 'https://t.me/sculptor_v1_bot?start=review', // Отзыв в формате кружок
-          3: 'https://t.me/sculptor_v1_bot?start=my_day', // Видео “Мой день”
-          4: 'https://t.me/sculptor_v1_bot?start=loadafter' // Фото до/после
+          2: 'https://t.me/sculptor_v6_bot?start=review', // Отзыв в формате кружок
+          3: 'https://t.me/sculptor_v6_bot?start=my_day', // Видео “Мой день”
+          4: 'https://t.me/sculptor_v6_bot?start=loadafter' // Фото до/после
         };
 
         // ensure only one handler is attached to the CTA at any given time
