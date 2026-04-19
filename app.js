@@ -1616,7 +1616,7 @@
         // Business rule:
         // - task #1 has no CTA button
         const ALWAYS_LOCKED_INDICES = [];
-        const ALWAYS_HIDE_BUTTON_INDICES = [0, 1, 2, 3, 4];
+        const ALWAYS_HIDE_BUTTON_INDICES = [0];
 
         function setTaskState(card, state, idx){
           try {
